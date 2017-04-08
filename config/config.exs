@@ -19,6 +19,24 @@ config :logger, :console,
   format: "$time $metadata[$level] $message\n",
   metadata: [:request_id]
 
+config :evolution, ecto_repos: [Evolution.Repo]
+
+config :guardian, Guardian,
+       hooks: GuardianDb,
+       allowed_algos: ["HS512"], # optional
+       verify_module: Guardian.JWT,  # optional
+       issuer: "Evolution",
+       ttl: { 30, :days },
+       allowed_drift: 2000,
+       verify_issuer: true, # optional
+       secret_key: "e03vun495gvye4",
+       serializer: Evolution.GuardianSerializer
+
+config :guardian_db, GuardianDb,
+       repo: Evolution.Repo,
+       schema_name: "guardian_tokens",
+       sweep_interval: 120
+
 # Import environment specific config. This must remain at the bottom
 # of this file so it overrides the configuration defined above.
 import_config "#{Mix.env}.exs"

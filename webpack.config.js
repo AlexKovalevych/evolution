@@ -5,7 +5,7 @@ var merge             = require( 'webpack-merge' );
 var autoprefixer      = require( 'autoprefixer' );
 var ExtractTextPlugin = require( 'extract-text-webpack-plugin' );
 var CopyWebpackPlugin = require( 'copy-webpack-plugin' );
-var entryPath         = path.join( __dirname, 'web/static/index.js' );
+var entryPath         = [path.join( __dirname, 'web/static/index.js' )];
 var outputPath        = path.join( __dirname, 'priv/static' );
 
 console.log( 'WEBPACK GO!');
@@ -19,7 +19,6 @@ var commonConfig = {
   output: {
     path:       outputPath,
     filename: `js/${outputFilename}`,
-    // publicPath: '/'
   },
 
   resolve: {
@@ -77,15 +76,15 @@ if ( TARGET_ENV === 'development' ) {
           exclude: [/elm-stuff/, /node_modules/],
           loader:  'elm-hot-loader!elm-webpack-loader?verbose=true&warn=true&debug=true'
         },
-        {
-          test: /\.(css|scss)$/,
-          loaders: [
-            'style-loader',
-            'css-loader',
-            'postcss-loader',
-            'sass-loader'
-          ]
-        }
+        //{
+          //test: /\.(css|scss)$/,
+          //loaders: [
+            //'style-loader',
+            //'css-loader',
+            //'postcss-loader',
+            ////'sass-loader'
+          //]
+        //}
       ]
     }
 
@@ -107,14 +106,14 @@ if ( TARGET_ENV === 'production' ) {
           exclude: [/elm-stuff/, /node_modules/],
           loader:  'elm-webpack'
         },
-        {
-          test: /\.(css|scss)$/,
-          loader: ExtractTextPlugin.extract( 'style-loader', [
-            'css-loader',
-            'postcss-loader',
-            'sass-loader'
-          ])
-        }
+        //{
+          //test: /\.(css|scss)$/,
+          //loader: ExtractTextPlugin.extract( 'style-loader', [
+            //'css-loader',
+            //'postcss-loader',
+            ////'sass-loader'
+          //])
+        //}
       ]
     },
 
@@ -145,13 +144,3 @@ if ( TARGET_ENV === 'production' ) {
   });
 }
 
-
-//module.exports = {
-  //module: {
-    //loaders: [{
-      //test: /\.elm$/,
-      //exclude: [/elm-stuff/, /node_modules/],
-      //loader: 'elm-webpack'
-    //}]
-  //}
-//};

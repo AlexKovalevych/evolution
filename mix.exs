@@ -19,7 +19,7 @@ defmodule Evolution.Mixfile do
   def application do
     [mod: {Evolution, []},
      applications: [:phoenix, :phoenix_html, :cowboy, :logger, :gettext,
-                    :phoenix_ecto, :postgrex]]
+                    :phoenix_ecto, :postgrex, :guardian_db]]
   end
 
   # Specifies which paths to compile per environment.
@@ -32,6 +32,7 @@ defmodule Evolution.Mixfile do
   defp deps do
     [{:phoenix, "~> 1.2.3"},
      {:postgrex, ">= 0.0.0"},
+     {:guardian_db, "~> 0.8.0"},
      {:phoenix_ecto, "~> 3.2"},
      {:phoenix_html, "~> 2.9"},
      {:phoenix_live_reload, "~> 1.0", only: :dev},

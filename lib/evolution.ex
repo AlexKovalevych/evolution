@@ -11,6 +11,7 @@ defmodule Evolution do
       supervisor(Evolution.Endpoint, []),
       # Start the Ecto repository
       supervisor(Evolution.Repo, []),
+      worker(GuardianDb.ExpiredSweeper, [])
       # Here you could define other workers and supervisors as children
       # worker(Evolution.Worker, [arg1, arg2, arg3]),
     ]

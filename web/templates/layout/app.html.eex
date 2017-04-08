@@ -12,6 +12,15 @@
   </head>
 
   <body>
+    <link href='https://fonts.googleapis.com/css?family=Roboto:400,300,500|Roboto+Mono|Roboto+Condensed:400,700&subset=latin,latin-ext' rel='stylesheet' type='text/css'>
+    <link rel="stylesheet" href="https://fonts.googleapis.com/icon?family=Material+Icons">
+    <link rel="stylesheet" href="https://code.getmdl.io/1.3.0/material.teal-green.min.css" />
+
+    <!-- Event.focusin
+         Polyfill required for Firefox to support focusin and focusout events
+    -->
+    <script src="https://cdn.polyfill.io/v2/polyfill.js?features=Event.focusin"></script>
+
     <script src="<%= static_path(@conn, "/js/main.js") %>"></script>
   </body>
 </html>
