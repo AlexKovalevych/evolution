@@ -16,7 +16,7 @@ defmodule Evolution.Router do
   scope "/", Evolution do
     pipe_through :browser # Use the default browser stack
 
-    get "/", PageController, :index
+    get "/*path", PageController, :index
   end
 
   # Other scopes may use custom stacks.

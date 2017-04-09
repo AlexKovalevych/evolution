@@ -1,12 +1,13 @@
 module Model exposing (..)
 
 import Models.User exposing (User)
+import Routes exposing (Route)
 import Material
 
 
 type alias Model =
     { mdl : Material.Model
-    , token : Maybe String
+    , token : String
     , user : Maybe User
-    , route : String
+    , route : Route
     }

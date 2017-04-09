@@ -1,5 +1,5 @@
 import "phoenix_html"
 
 let Elm = require('./Main.elm');
-Elm.Main.fullscreen();
+Elm.Main.fullscreen({token: "", user: null});
 

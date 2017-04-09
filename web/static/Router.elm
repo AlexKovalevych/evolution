@@ -1,27 +1,42 @@
-module Router exposing (parseUrl, delta2url)
+module Router exposing (parseUrl, parsePath, delta2url)
 
 import Model exposing (Model)
 import Navigation exposing (Location)
 import UrlParser exposing (..)
-import RouteUrl.Builder exposing (newEntry, builder, Builder)
+import RouteUrl exposing (UrlChange)
+import RouteUrl.Builder exposing (newEntry, toUrlChange, builder, Builder, replacePath)
+import Messages exposing (Msg(..))
+import Routes exposing (Route(..))
 
 
-parseUrl : Location -> List Message
-parseUrl =
-    parsePath route
+parseUrl : Location -> List Msg
+parseUrl location =
+    case UrlParser.parsePath route location of
+        Nothing ->
+            [ ErrorPage ]
+
+        Just route ->
+            [ ChangePage route ]
 
 
-delta2builder : Model -> Model -> Maybe Builder
-delta2builder previous current =
-    builder
-        |> newEntry current.route
-        |> Just
+parsePath : Location -> Route
+parsePath location =
+    case UrlParser.parsePath route location of
+        Nothing ->
+            NotFound
+
+        Just route ->
+            route
 
 
-type Route
-    = Home
-    | Login
-    | Signup
+delta2url : Model -> Model -> Maybe UrlChange
+delta2url previous current =
+    Maybe.map toUrlChange <|
+        (builder
+            |> newEntry
+            |> replacePath [ toString current.route ]
+            |> Just
+        )
 
 
 route : Parser (Route -> a) a
