@@ -18,3 +18,6 @@ update msg model =
 
         ChangePage route ->
             { model | route = route } ! []
+
+        NoOp ->
+            model ! []
