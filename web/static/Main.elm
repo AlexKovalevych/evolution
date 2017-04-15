@@ -10,6 +10,7 @@ import Update exposing (update)
 import Routes exposing (Route(..))
 import View exposing (view)
 import Login.Model as LoginModel
+import Signup.Model as SignupModel
 
 
 main : RouteUrlProgram Flags Model Msg
@@ -41,5 +42,6 @@ init flags =
         , mdl = Material.model
         , route = route
         , login = LoginModel.model
+        , signup = SignupModel.model
         }
             ! []

@@ -8,10 +8,7 @@ import Material.Options as Options exposing (css, cs, when)
 import Routes exposing (Route(..))
 import Login.View as LoginView
 import Home.View as HomeView
-
-
--- import Signup.View as SignupView
-
+import Signup.View as SignupView
 import NotFound.View as NotFoundView
 
 
@@ -37,10 +34,9 @@ view_ model =
         Home ->
             HomeView.view model
 
-        Signup ->
-            div [] []
+        Routes.Signup ->
+            SignupView.view model
 
-        -- SignupView.view model
         NotFound ->
             NotFoundView.view model
 
@@ -62,7 +58,7 @@ header model =
             , Layout.navigation []
                 [ Layout.link
                     [ cs "hide" |> when isLoggedIn
-                    , Options.onClick <| ChangePage Signup
+                    , Options.onClick <| ChangePage Routes.Signup
                     ]
                     [ span [] [ text "Signup" ] ]
                 , Layout.link

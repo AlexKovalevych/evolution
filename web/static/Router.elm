@@ -34,7 +34,7 @@ route =
     oneOf
         [ map Home (s "")
         , map Routes.Login (s "login")
-        , map Signup (s "signup")
+        , map Routes.Signup (s "signup")
         ]
 
 
@@ -44,7 +44,7 @@ routeToString route =
         Routes.Login ->
             "login"
 
-        Signup ->
+        Routes.Signup ->
             "signup"
 
         Home ->

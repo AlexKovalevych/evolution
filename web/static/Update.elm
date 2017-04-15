@@ -5,6 +5,7 @@ import Model exposing (Model)
 import Routes exposing (Route(..))
 import Material
 import Login.Update as LoginUpdate
+import Signup.Update as SignupUpdate
 
 
 update : Msg -> Model -> ( Model, Cmd Msg )
@@ -21,6 +22,9 @@ update msg model =
 
         Messages.Login loginMsg ->
             { model | login = LoginUpdate.update loginMsg model.login } ! []
+
+        Messages.Signup signupMsg ->
+            { model | signup = SignupUpdate.update signupMsg model.signup } ! []
 
         NoOp ->
             model ! []
