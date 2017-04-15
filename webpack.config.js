@@ -12,13 +12,13 @@ console.log( 'WEBPACK GO!');
 
 // determine build env
 var TARGET_ENV = process.env.npm_lifecycle_event === 'build' ? 'production' : 'development';
-var outputFilename = TARGET_ENV === 'production' ? '[name]-[hash].js' : '[name].js'
+var outputFilename = TARGET_ENV === 'production' ? '[name]-[hash].js' : '[name].js';
 
 // common webpack config
 var commonConfig = {
   output: {
     path:       outputPath,
-    filename: `js/${outputFilename}`,
+    filename: `js/${outputFilename}`
   },
 
   resolve: {
@@ -74,7 +74,7 @@ if ( TARGET_ENV === 'development' ) {
         {
           test:    /\.elm$/,
           exclude: [/elm-stuff/, /node_modules/],
-          loader:  'elm-hot-loader!elm-webpack-loader?verbose=true&warn=true&debug=true'
+            loader:  'elm-hot-loader!elm-webpack-loader?verbose=true&warn=true&debug=true&forceWatch=true'
         },
         //{
           //test: /\.(css|scss)$/,

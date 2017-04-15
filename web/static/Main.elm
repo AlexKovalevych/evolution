@@ -3,12 +3,13 @@ module Main exposing (..)
 import Model exposing (Model)
 import Models.User exposing (User)
 import RouteUrl exposing (RouteUrlProgram, UrlChange)
-import Router exposing (parseUrl, parsePath, delta2url)
+import Router exposing (parseUrl, delta2url)
 import Material
 import Messages exposing (Msg(..))
 import Update exposing (update)
 import Routes exposing (Route(..))
 import View exposing (view)
+import Login.Model as LoginModel
 
 
 main : RouteUrlProgram Flags Model Msg
@@ -33,11 +34,12 @@ init : Flags -> ( Model, Cmd Msg )
 init flags =
     let
         route =
-            Login
+            Routes.Login
     in
         { token = flags.token
         , user = flags.user
         , mdl = Material.model
         , route = route
+        , login = LoginModel.model
         }
             ! []

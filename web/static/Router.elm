@@ -1,4 +1,4 @@
-module Router exposing (parseUrl, parsePath, delta2url)
+module Router exposing (parseUrl, delta2url)
 
 import Model exposing (Model)
 import Navigation exposing (Location)
@@ -19,22 +19,12 @@ parseUrl location =
             [ ChangePage route ]
 
 
-parsePath : Location -> Route
-parsePath location =
-    case UrlParser.parsePath route location of
-        Nothing ->
-            NotFound
-
-        Just route ->
-            route
-
-
 delta2url : Model -> Model -> Maybe UrlChange
 delta2url previous current =
     Maybe.map toUrlChange <|
         (builder
             |> newEntry
-            |> replacePath [ toString current.route ]
+            |> replacePath [ routeToString current.route ]
             |> Just
         )
 
@@ -43,19 +33,22 @@ route : Parser (Route -> a) a
 route =
     oneOf
         [ map Home (s "")
-        , map Login (s "login")
+        , map Routes.Login (s "login")
         , map Signup (s "signup")
         ]
 
 
+routeToString : Route -> String
+routeToString route =
+    case route of
+        Routes.Login ->
+            "login"
 
---matchers : List (Matcher Route)
---matchers =
---[ static Home "/"
---, static Login "/login"
---, static Register "/register"
---]
----- static
---match matchers "/" == Just Home
---match matchers "/login" == Just Login
---match matchers "/register" == Just Register
+        Signup ->
+            "signup"
+
+        Home ->
+            ""
+
+        _ ->
+            ""
