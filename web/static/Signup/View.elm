@@ -33,6 +33,8 @@ view model =
                         , Textfield.text_
                         , Options.css "width" "100%"
                         , Options.onInput <| (\value -> Signup <| SetLogin value)
+                        , Textfield.error (model.signup.loginError)
+                            |> Options.when (model.signup.loginError /= "")
                         ]
                         []
                     ]

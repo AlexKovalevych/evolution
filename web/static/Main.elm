@@ -28,6 +28,7 @@ main =
 type alias Flags =
     { user : Maybe User
     , token : String
+    , csrf : String
     }
 
 
@@ -38,6 +39,7 @@ init flags =
             Routes.Login
     in
         { token = flags.token
+        , csrf = flags.csrf
         , user = flags.user
         , mdl = Material.model
         , route = route

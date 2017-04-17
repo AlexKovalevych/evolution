@@ -22,10 +22,11 @@
 
     <script src="<%= static_path(@conn, "/js/main.js") %>"></script>
     <script type="text/javascript" charset="utf-8">
-      Elm.Main.fullscreen({
-        token: "<%= Guardian.Plug.current_token(@conn) %>",
-        user: null
-      });
+     Elm.Main.fullscreen({
+         token: "<%= Guardian.Plug.current_token(@conn) %>",
+         csrf: "<%= get_csrf_token() %>",
+         user: null
+     });
     </script>
   </body>
 </html>

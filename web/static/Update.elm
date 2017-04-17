@@ -24,7 +24,7 @@ update msg model =
             { model | login = LoginUpdate.update loginMsg model.login } ! []
 
         Messages.Signup signupMsg ->
-            { model | signup = SignupUpdate.update signupMsg model.signup } ! []
+            SignupUpdate.update signupMsg model
 
         NoOp ->
             model ! []

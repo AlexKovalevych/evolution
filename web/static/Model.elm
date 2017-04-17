@@ -10,6 +10,7 @@ import Material
 type alias Model =
     { mdl : Material.Model
     , token : String
+    , csrf : String
     , user : Maybe User
     , route : Route
     , login : LoginModel
