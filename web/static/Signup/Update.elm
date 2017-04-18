@@ -5,6 +5,8 @@ import Signup.Messages exposing (SignupMsg(..))
 import Signup.Model
 import Model exposing (Model)
 import Messages exposing (Msg(..))
+import Json.Decode as D
+import Dict
 
 
 update : SignupMsg -> Model -> ( Model, Cmd Msg )
@@ -43,7 +45,21 @@ update msg model =
                         ! [ Http.send (\v -> Signup <| SignupResponse v) request ]
 
             SignupResponse (Ok response) ->
-                model ! []
+                case D.decodeString (D.at [ "errors" ] (D.dict D.string)) response of
+                    Err _ ->
+                        case D.decodeString (D.at [ "token" ] D.string) response of
+                            Err _ ->
+                                model ! []
+
+                            Ok token ->
+                                { model
+                                    | token = token
+                                    , signup = { signupModel | errors = Dict.empty }
+                                }
+                                    ! []
+
+                    Ok errors ->
+                        { model | signup = { signupModel | errors = errors } } ! []
 
             SignupResponse (Err reason) ->
                 model ! []

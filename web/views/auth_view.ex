@@ -8,9 +8,6 @@ defmodule Evolution.AuthView do
   end
 
   def render("signup.json", %{changeset: changeset}) do
-    IO.inspect(changeset.errors)
-    %{
-      errors: changeset.errors
-    }
+    %{errors: changeset.errors |> Enum.map(&error_json/1) |> Enum.into(%{})}
   end
 end

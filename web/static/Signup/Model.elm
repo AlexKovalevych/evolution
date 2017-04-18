@@ -1,14 +1,14 @@
 module Signup.Model exposing (..)
 
 import Json.Encode exposing (object, string, Value)
+import Dict
 
 
 type alias SignupModel =
     { login : String
     , password : String
     , confirmPassword : String
-    , loginError : String
-    , passwordError : String
+    , errors : Dict.Dict String String
     }
 
 
@@ -17,8 +17,7 @@ model =
     { login = ""
     , password = ""
     , confirmPassword = ""
-    , loginError = ""
-    , passwordError = ""
+    , errors = Dict.empty
     }
 
 
@@ -27,4 +26,5 @@ encoder model =
     object
         [ ( "login", string model.login )
         , ( "password", string model.password )
+        , ( "password_confirmation", string model.confirmPassword )
         ]

@@ -22,7 +22,8 @@ defmodule Evolution.User do
     struct
     |> cast(params, @required_fields ++ @optional_fields)
     |> validate_required(@required_fields)
-    # |> validate_format(:email, ~r/^[A-Za-z0-9._%+-]+@[A-Za-z0-9.-]+\.[A-Za-z]{2,4}$/)
+    |> validate_confirmation(:password)
+    |> validate_length(:login, min: 4)
     |> validate_length(:password, min: 4)
     |> unique_constraint(:login)
   end

@@ -10,6 +10,7 @@ import Material.Textfield as Textfield
 import Material.Button as Button
 import Material.Grid exposing (grid, Device(..), size, cell, offset)
 import Material.Options as Options
+import Dict
 
 
 view : Model.Model -> Html Msg
@@ -33,8 +34,8 @@ view model =
                         , Textfield.text_
                         , Options.css "width" "100%"
                         , Options.onInput <| (\value -> Signup <| SetLogin value)
-                        , Textfield.error (model.signup.loginError)
-                            |> Options.when (model.signup.loginError /= "")
+                        , Textfield.error (getError model.signup.errors "login")
+                            |> Options.when (Dict.member "login" model.signup.errors)
                         ]
                         []
                     ]
@@ -48,6 +49,8 @@ view model =
                         , Textfield.value model.signup.password
                         , Options.css "width" "100%"
                         , Options.onInput <| (\value -> Signup <| SetPassword value)
+                        , Textfield.error (getError model.signup.errors "password")
+                            |> Options.when (Dict.member "password" model.signup.errors)
                         ]
                         []
                     ]
@@ -61,6 +64,8 @@ view model =
                         , Textfield.value model.signup.confirmPassword
                         , Options.css "width" "100%"
                         , Options.onInput <| (\value -> Signup <| SetConfirmPassword value)
+                        , Textfield.error (getError model.signup.errors "password_confirmation")
+                            |> Options.when (Dict.member "password_confirmation" model.signup.errors)
                         ]
                         []
                     ]
@@ -76,3 +81,13 @@ view model =
                 ]
             ]
         ]
+
+
+getError : Dict.Dict String String -> String -> String
+getError errors field =
+    case Dict.get field errors of
+        Nothing ->
+            ""
+
+        Just value ->
+            value
