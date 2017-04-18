@@ -1,9 +1,10 @@
 defmodule Evolution.AuthView do
   use Evolution.Web, :view
 
-  def render("signup.json", %{token: token}) do
+  def render("signup.json", %{token: token, user: user}) do
     %{
-      token: token
+      token: token,
+      user: user
     }
   end
 

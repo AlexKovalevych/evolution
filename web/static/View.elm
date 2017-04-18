@@ -62,9 +62,15 @@ header model =
                     ]
                     [ span [] [ text "Signup" ] ]
                 , Layout.link
-                    [ Options.onClick <| ChangePage Routes.Login
+                    [ cs "hide" |> when isLoggedIn
+                    , Options.onClick <| ChangePage Routes.Login
                     ]
                     [ span [] [ text "Login" ] ]
+                , Layout.link
+                    [ cs "hide" |> (when <| not isLoggedIn)
+                    , Options.onClick <| Logout
+                    ]
+                    [ span [] [ text "Logout" ] ]
                 ]
             ]
         ]

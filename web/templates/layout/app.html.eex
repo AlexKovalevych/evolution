@@ -25,7 +25,7 @@
      Elm.Main.fullscreen({
          token: "<%= Guardian.Plug.current_token(@conn) %>",
          csrf: "<%= get_csrf_token() %>",
-         user: null
+         user: <%= Poison.encode!(Map.get(assigns, :user)) |> raw %>
      });
     </script>
   </body>

@@ -10,9 +10,9 @@ defmodule Evolution.AuthController do
     changeset = User.changeset(%User{}, params)
     case Repo.insert(changeset) do
       {:ok, user} ->
-        Guardian.Plug.sign_in(conn, user)
+        conn = Guardian.Plug.sign_in(conn, user)
         conn
-        |> render "signup.json", token: Guardian.Plug.current_token(conn)
+        |> render "signup.json", token: Guardian.Plug.current_token(conn), user: user
       {:error, changese} ->
         conn
         |> render "signup.json", changeset: changeset

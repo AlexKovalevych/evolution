@@ -10,6 +10,6 @@ defmodule Evolution.PageController do
 
   def unauthenticated(conn, _) do
     conn
-    |> redirect(to: login_path(conn, :auth))
+    |> redirect(to: login_path(conn, :login))
   end
 end

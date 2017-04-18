@@ -12,4 +12,5 @@ type Msg
     | ChangePage Route
     | Login LoginMsg
     | Signup SignupMsg
+    | Logout
     | NoOp

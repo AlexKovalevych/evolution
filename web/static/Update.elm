@@ -26,5 +26,8 @@ update msg model =
         Messages.Signup signupMsg ->
             SignupUpdate.update signupMsg model
 
+        Logout ->
+            model ! []
+
         NoOp ->
             model ! []
