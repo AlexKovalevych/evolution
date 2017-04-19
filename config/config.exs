@@ -21,6 +21,15 @@ config :logger, :console,
 
 config :evolution, ecto_repos: [Evolution.Repo]
 
+config :ueberauth, Ueberauth,
+  providers: [
+    identity: { Ueberauth.Strategy.Identity, [
+                  callback_methods: ["POST"],
+                  uid_field: :login,
+                  nickname_field: :login,
+                ] },
+  ]
+
 config :guardian, Guardian,
        hooks: GuardianDb,
        allowed_algos: ["HS512"], # optional
@@ -45,3 +54,10 @@ import_config "#{Mix.env}.exs"
 config :phoenix, :generators,
   migration: true,
   binary_id: false
+
+config :dogma,
+  rule_set: Dogma.RuleSet.All,
+  override: [
+    %Rule.LineLength{ max_length: 120 },
+    %Rule.ModuleDoc{}
+]

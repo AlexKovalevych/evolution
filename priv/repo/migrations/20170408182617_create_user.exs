@@ -8,5 +8,6 @@ defmodule Evolution.Repo.Migrations.CreateUser do
       timestamps()
     end
 
+    create index(:users, [:login], unique: true)
   end
 end

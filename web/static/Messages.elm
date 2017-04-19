@@ -1,5 +1,6 @@
 module Messages exposing (..)
 
+import Http
 import Material
 import Routes exposing (Route)
 import Login.Messages exposing (LoginMsg)
@@ -12,5 +13,6 @@ type Msg
     | ChangePage Route
     | Login LoginMsg
     | Signup SignupMsg
-    | Logout
+    | LogoutRequest
+    | LogoutResponse (Result Http.Error String)
     | NoOp

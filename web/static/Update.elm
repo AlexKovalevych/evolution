@@ -1,5 +1,6 @@
 module Update exposing (update)
 
+import Http
 import Messages exposing (Msg(..))
 import Model exposing (Model)
 import Routes exposing (Route(..))
@@ -21,13 +22,32 @@ update msg model =
             { model | route = route } ! []
 
         Messages.Login loginMsg ->
-            { model | login = LoginUpdate.update loginMsg model.login } ! []
+            LoginUpdate.update loginMsg model
 
         Messages.Signup signupMsg ->
             SignupUpdate.update signupMsg model
 
-        Logout ->
+        LogoutResponse (Ok response) ->
+            { model | token = "", user = Nothing, route = Routes.Login } ! []
+
+        LogoutResponse (Err _) ->
             model ! []
+
+        LogoutRequest ->
+            let
+                request =
+                    Http.request
+                        { method = "POST"
+                        , headers = [ Http.header "x-csrf-token" model.csrf ]
+                        , url = "/logout"
+                        , body = Http.emptyBody
+                        , expect = Http.expectString
+                        , timeout = Nothing
+                        , withCredentials = False
+                        }
+            in
+                model
+                    ! [ Http.send LogoutResponse request ]
 
         NoOp ->
             model ! []

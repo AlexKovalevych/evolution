@@ -68,7 +68,7 @@ header model =
                     [ span [] [ text "Login" ] ]
                 , Layout.link
                     [ cs "hidden" |> when (not isLoggedIn)
-                    , Options.onClick <| Logout
+                    , Options.onClick <| LogoutRequest
                     ]
                     [ span [] [ text "Logout" ] ]
                 ]

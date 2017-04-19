@@ -21,11 +21,18 @@ defmodule Evolution.Router do
   scope "/", Evolution do
     pipe_through [:browser, :browser_session] # Use the default browser stack
 
-    get "/login", AuthController, :login, as: :login
-    post "/login", AuthController, :login
+    delete "/logout", AuthController, :logout
     get "/signup", AuthController, :signup, as: :signup
     post "/signup", AuthController, :signup
     get "/*path", PageController, :index
+  end
+
+  scope "/auth", Evolution do
+    pipe_through [:browser, :browser_auth] 
+
+    get "/:identity", AuthController, :login
+    get "/:identity/callback", AuthController, :callback
+    post "/:identity/callback", AuthController, :callback
   end
 
   # Other scopes may use custom stacks.

@@ -18,8 +18,15 @@ defmodule Evolution.Mixfile do
   # Type `mix help compile.app` for more information.
   def application do
     [mod: {Evolution, []},
-     applications: [:phoenix, :phoenix_html, :cowboy, :logger, :gettext,
-                    :phoenix_ecto, :postgrex, :guardian_db]]
+     applications: [:phoenix,
+                    :phoenix_html,
+                    :cowboy,
+                    :logger,
+                    :gettext,
+                    :phoenix_ecto,
+                    :postgrex,
+                    :guardian_db,
+                    :ueberauth_identity]]
   end
 
   # Specifies which paths to compile per environment.
@@ -33,6 +40,7 @@ defmodule Evolution.Mixfile do
     [{:phoenix, "~> 1.2.3"},
      {:postgrex, ">= 0.0.0"},
      {:guardian_db, "~> 0.8.0"},
+     {:ueberauth_identity, "~> 0.2"},
      {:phoenix_ecto, "~> 3.2"},
      {:phoenix_html, "~> 2.9"},
      {:phoenix_live_reload, "~> 1.0", only: :dev},
