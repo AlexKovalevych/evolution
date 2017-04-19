@@ -57,17 +57,17 @@ header model =
             , Layout.spacer
             , Layout.navigation []
                 [ Layout.link
-                    [ cs "hide" |> when isLoggedIn
+                    [ cs "hidden" |> when isLoggedIn
                     , Options.onClick <| ChangePage Routes.Signup
                     ]
                     [ span [] [ text "Signup" ] ]
                 , Layout.link
-                    [ cs "hide" |> when isLoggedIn
+                    [ cs "hidden" |> when isLoggedIn
                     , Options.onClick <| ChangePage Routes.Login
                     ]
                     [ span [] [ text "Login" ] ]
                 , Layout.link
-                    [ cs "hide" |> (when <| not isLoggedIn)
+                    [ cs "hidden" |> when (not isLoggedIn)
                     , Options.onClick <| Logout
                     ]
                     [ span [] [ text "Logout" ] ]
