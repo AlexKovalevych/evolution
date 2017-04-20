@@ -12,23 +12,19 @@ defmodule Evolution.AuthController do
   end
 
   def callback(%Plug.Conn{assigns: %{ueberauth_failure: fails}} = conn, _params, current_user, _claims) do
-    IO.inspect(fails)
-    # conn
-    # |> render("login.json")
+    conn
+    |> render("login.json", error: fails)
   end
 
   def callback(%Plug.Conn{assigns: %{ueberauth_auth: auth}} = conn, _params, current_user, _claims) do
     case UserFromAuth.get_or_insert(auth, current_user) do
       {:ok, user} ->
+        conn = conn |> Guardian.Plug.sign_in(user)
         conn
-        |> put_flash(:info, "Signed in as #{user.name}")
-        |> Guardian.Plug.sign_in(user)
         |> render("login.json", token: Guardian.Plug.current_token(conn), user: user)
       {:error, reason} ->
-        IO.inspect(reason)
         conn
-        |> put_flash(:error, "Could not authenticate. Error: #{reason}")
-        # |> render("login.html", current_user: current_user, current_auths: auths(current_user))
+        |> render("signup.json", error: reason)
     end
   end
 
@@ -77,10 +73,9 @@ defmodule Evolution.AuthController do
   #   end
   # end
 
-  def logout(conn, _params) do
+  def logout(conn, _params, _current_user, _claims) do
     conn
     |> configure_session(drop: true)
-
     |> Guardian.Plug.sign_out()
     |> text("")
   end

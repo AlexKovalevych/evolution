@@ -3,6 +3,7 @@ defmodule Evolution.UserFromAuth do
   alias Evolution.Authorization
   alias Ueberauth.Auth
   alias Evolution.Repo
+  import Evolution.Gettext
 
   def get_or_insert(auth, current_user) do
     case auth_and_validate(auth) do
@@ -21,16 +22,17 @@ defmodule Evolution.UserFromAuth do
   defp validate_auth_for_registration(%Auth{provider: :identity} = auth) do
     pw = Map.get(auth.credentials.other, :password)
     pwc = Map.get(auth.credentials.other, :password_confirmation)
-    nickname = auth.info.nickname
+    nickname = uid_from_auth(auth)
+    IO.inspect(nickname)
     case pw do
       nil ->
-        {:error, :password_is_null}
+        {:error, {:password, dgettext("errors", "can't be blank")}}
       "" ->
-        {:error, :password_empty}
+        {:error, {:password, dgettext("errors", "can't be blank")}}
       ^pwc ->
         validate_pw_length(pw, nickname)
       _ ->
-        {:error, :password_confirmation_does_not_match}
+        {:error, {:password_confirmation, dgettext("errors", "does not match confirmation")}}
     end
   end
 
@@ -41,7 +43,10 @@ defmodule Evolution.UserFromAuth do
     if String.length(pw) >= 8 do
       validate_nickname(nickname)
     else
-      {:error, :password_length_is_less_than_8}
+      {:error, {:password, dngettext("errors",
+          "should be at least %{count} character(s)",
+          "should be at least %{count} character(s)",
+          8)}}
     end
   end
 
@@ -55,10 +60,13 @@ defmodule Evolution.UserFromAuth do
   # end
 
   defp validate_nickname(nickname) when is_binary(nickname) do
-    if String.length nickname >= 4 do
+    if String.length(nickname) >= 4 do
       :ok
     else
-      {:error, :nickname_is_too_short}
+      {:error, {:login, dngettext("errors",
+          "should be at least %{count} character(s)",
+          "should be at least %{count} character(s)",
+          4)}}
     end
   end
 
@@ -197,7 +205,7 @@ defmodule Evolution.UserFromAuth do
   defp token_from_auth(auth), do: auth.credentials.token
 
   # defp uid_from_auth(%{ provider: :slack } = auth), do: auth.credentials.other.user_id
-  defp uid_from_auth(auth), do: auth.info.nickname
+  defp uid_from_auth(auth), do: to_string(auth.info.nickname)
 
   defp password_from_auth(%{provider: :identity} = auth), do: auth.credentials.other.password
   defp password_from_auth(_), do: nil
@@ -209,7 +217,8 @@ defmodule Evolution.UserFromAuth do
 
   # We don't have any nested structures in our params that we are using scrub with so this is a very simple scrub
   defp scrub(params) do
-    result = Enum.filter(params, fn
+    result = params
+    |> Enum.filter(fn
       {key, val} when is_binary(val) -> String.strip(val) != ""
       {key, val} when is_nil(val) -> false
       _ -> true

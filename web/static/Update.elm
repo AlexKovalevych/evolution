@@ -37,7 +37,7 @@ update msg model =
             let
                 request =
                     Http.request
-                        { method = "POST"
+                        { method = "DELETE"
                         , headers = [ Http.header "x-csrf-token" model.csrf ]
                         , url = "/logout"
                         , body = Http.emptyBody

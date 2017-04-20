@@ -8,7 +8,8 @@ defmodule Evolution.AuthView do
     }
   end
 
-  def render("signup.json", %{changeset: changeset}) do
-    %{errors: changeset.errors |> Enum.map(&error_json/1) |> Enum.into(%{})}
+  def render("signup.json", %{error: {field, error}}) do
+    errors = Map.new() |> Map.put(field, error)
+    %{errors: errors}
   end
 end
