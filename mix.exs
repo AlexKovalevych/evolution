@@ -26,6 +26,8 @@ defmodule Evolution.Mixfile do
                     :phoenix_ecto,
                     :postgrex,
                     :guardian_db,
+                    :comeonin,
+                    :ueberauth,
                     :ueberauth_identity]]
   end
 
@@ -46,6 +48,7 @@ defmodule Evolution.Mixfile do
      {:phoenix_live_reload, "~> 1.0", only: :dev},
      {:gettext, "~> 0.9"},
      {:credo, "~> 0.7", only: [:dev, :test]},
+     {:comeonin, "~> 3.0"},
      {:dogma, "~> 0.1.15"},
      {:cowboy, "~> 1.0"}]
   end

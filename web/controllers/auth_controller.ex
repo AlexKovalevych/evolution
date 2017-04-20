@@ -2,6 +2,7 @@ defmodule Evolution.AuthController do
   use Evolution.Web, :controller
   alias Evolution.User
   alias Evolution.UserFromAuth
+  use Guardian.Phoenix.Controller
 
   plug Ueberauth
 
@@ -10,33 +11,40 @@ defmodule Evolution.AuthController do
     |> render("login.json", error: "Failed to login")
   end
 
+  def callback(%Plug.Conn{assigns: %{ueberauth_failure: fails}} = conn, _params, current_user, _claims) do
+    IO.inspect(fails)
+    # conn
+    # |> render("login.json")
+  end
+
   def callback(%Plug.Conn{assigns: %{ueberauth_auth: auth}} = conn, _params, current_user, _claims) do
-    case UserFromAuth.get_or_insert(auth, current_user, Repo) do
+    case UserFromAuth.get_or_insert(auth, current_user) do
       {:ok, user} ->
         conn
         |> put_flash(:info, "Signed in as #{user.name}")
-        |> Guardian.Plug.sign_in(user, :access, perms: %{default: Guardian.Permissions.max})
-        |> redirect(to: private_page_path(conn, :index))
-      {:error, _reason} ->
+        |> Guardian.Plug.sign_in(user)
+        |> render("login.json", token: Guardian.Plug.current_token(conn), user: user)
+      {:error, reason} ->
+        IO.inspect(reason)
         conn
-        |> put_flash(:error, "Could not authenticate. Error: #{_reason}")
-        |> render("login.html", current_user: current_user, current_auths: auths(current_user))
+        |> put_flash(:error, "Could not authenticate. Error: #{reason}")
+        # |> render("login.html", current_user: current_user, current_auths: auths(current_user))
     end
   end
 
-  def callback(%{assigns: %{ueberauth_auth: auth}} = conn, _params) do
-    case UserFromAuth.find_or_create(auth) do
-      {:ok, user} ->
-        conn
-        |> put_flash(:info, "Successfully authenticated.")
-        |> put_session(:current_user, user)
-        |> redirect(to: "/")
-      {:error, reason} ->
-        conn
-        |> put_flash(:error, reason)
-        |> redirect(to: "/")
-    end
-  end
+  # def callback(%{assigns: %{ueberauth_auth: auth}} = conn, _params, current_user, _claims) do
+  #   case UserFromAuth.get_or_insert(auth) do
+  #     {:ok, user} ->
+  #       conn
+  #       |> put_flash(:info, "Successfully authenticated.")
+  #       |> put_session(:current_user, user)
+  #       |> redirect(to: "/")
+  #     {:error, reason} ->
+  #       conn
+  #       |> put_flash(:error, reason)
+  #       |> redirect(to: "/")
+  #   end
+  # end
 
   # def identity_callback(%{assigns: %{ueberauth_auth: auth}} = conn, params) do
   #   case User.validate_password(auth.credentials) do
@@ -53,7 +61,7 @@ defmodule Evolution.AuthController do
   #   end
   # end
 
-  def login(conn, _params) do
+  def login(conn, _params, current_user, _claims) do
     render conn, "index.html"
   end
 
@@ -77,20 +85,27 @@ defmodule Evolution.AuthController do
     |> text("")
   end
 
-  def signup(conn, %{"login" => login, "password" => password} = params) do
-    changeset = User.changeset(%User{}, params)
-    case Repo.insert(changeset) do
-      {:ok, user} ->
-        conn = Guardian.Plug.sign_in(conn, user)
-        conn
-        |> render "login.json", token: Guardian.Plug.current_token(conn), user: user
-      {:error, changese} ->
-        conn
-        |> render "signup.json", changeset: changeset
-    end
-  end
+  # def signup(conn, _params) do
+  #   result = Repo.transaction(fn ->
+  #     case Repo.insert(changeset) do
+  #       {:ok, user} ->
+  #         User.authorization_from_auth(user, auth)
+  #         {:ok, user}
+  #       {:error, changeset} -> {:error, changeset}
+  #     end
+  #   end)
+  #   case result do
+  #     {:ok, user} ->
+  #       conn = Guardian.Plug.sign_in(conn, user)
+  #       conn
+  #       |> render "login.json", token: Guardian.Plug.current_token(conn), user: user
+  #     {:error, changeset} ->
+  #       conn
+  #       |> render "signup.json", changeset: changeset
+  #   end
+  # end
 
-  def signup(conn, _params) do
+  def signup(conn, _params, current_user, _claims) do
     render conn, "index.html"
   end
 

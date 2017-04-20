@@ -36,7 +36,7 @@ update msg model =
                         Http.request
                             { method = "POST"
                             , headers = [ Http.header "x-csrf-token" model.csrf ]
-                            , url = "/signup"
+                            , url = "/auth/identity/callback"
                             , body = body
                             , expect = Http.expectString
                             , timeout = Nothing

@@ -2,16 +2,17 @@ defmodule Evolution.UserFromAuth do
   alias Evolution.User
   alias Evolution.Authorization
   alias Ueberauth.Auth
+  alias Evolution.Repo
 
-  def get_or_insert(auth, current_user, repo) do
-    case auth_and_validate(auth, repo) do
-      {:error, :not_found} -> register_user_from_auth(auth, current_user, repo)
+  def get_or_insert(auth, current_user) do
+    case auth_and_validate(auth) do
+      {:error, :not_found} -> register_user_from_auth(auth, current_user)
       {:error, reason} -> {:error, reason}
       authorization ->
         if authorization.expires_at && authorization.expires_at < Guardian.Utils.timestamp do
-          replace_authorization(authorization, auth, current_user, repo)
+          replace_authorization(authorization, auth, current_user)
         else
-          user_from_authorization(authorization, current_user, repo)
+          user_from_authorization(authorization, current_user)
         end
     end
   end
@@ -20,14 +21,14 @@ defmodule Evolution.UserFromAuth do
   defp validate_auth_for_registration(%Auth{provider: :identity} = auth) do
     pw = Map.get(auth.credentials.other, :password)
     pwc = Map.get(auth.credentials.other, :password_confirmation)
-    email = auth.info.email
+    nickname = auth.info.nickname
     case pw do
       nil ->
         {:error, :password_is_null}
       "" ->
         {:error, :password_empty}
       ^pwc ->
-        validate_pw_length(pw, email)
+        validate_pw_length(pw, nickname)
       _ ->
         {:error, :password_confirmation_does_not_match}
     end
@@ -36,27 +37,35 @@ defmodule Evolution.UserFromAuth do
   # All the other providers are oauth so should be good
   defp validate_auth_for_registration(auth), do: :ok
 
-  defp validate_pw_length(pw, email) when is_binary(pw) do
+  defp validate_pw_length(pw, nickname) when is_binary(pw) do
     if String.length(pw) >= 8 do
-      validate_email(email)
+      validate_nickname(nickname)
     else
       {:error, :password_length_is_less_than_8}
     end
   end
 
-  defp validate_email(email) when is_binary(email) do
-    case Regex.run(~r/^[A-Za-z0-9._%+-]+@[A-Za-z0-9.-]+\.[A-Za-z]{2,4}$/, email) do
-      nil ->
-        {:error, :invalid_email}
-      [email] ->
-        :ok
+  # defp validate_email(email) when is_binary(email) do
+  #   case Regex.run(~r/^[A-Za-z0-9._%+-]+@[A-Za-z0-9.-]+\.[A-Za-z]{2,4}$/, email) do
+  #     nil ->
+  #       {:error, :invalid_email}
+  #     [email] ->
+  #       :ok
+  #   end
+  # end
+
+  defp validate_nickname(nickname) when is_binary(nickname) do
+    if String.length nickname >= 4 do
+      :ok
+    else
+      {:error, :nickname_is_too_short}
     end
   end
 
-  defp register_user_from_auth(auth, current_user, repo) do
+  defp register_user_from_auth(auth, current_user) do
     case validate_auth_for_registration(auth) do
       :ok ->
-        case repo.transaction(fn -> create_user_from_auth(auth, current_user, repo) end) do
+        case Repo.transaction(fn -> create_user_from_auth(auth, current_user) end) do
           {:ok, response} -> response
           {:error, reason} -> {:error, reason}
         end
@@ -64,14 +73,14 @@ defmodule Evolution.UserFromAuth do
     end
   end
 
-  defp replace_authorization(authorization, auth, current_user, repo) do
+  defp replace_authorization(authorization, auth, current_user) do
     case validate_auth_for_registration(auth) do
       :ok ->
-        case user_from_authorization(authorization, current_user, repo) do
+        case user_from_authorization(authorization, current_user) do
           {:ok, user} ->
-            case repo.transaction(fn ->
-              repo.delete(authorization)
-              authorization_from_auth(user, auth, repo)
+            case Repo.transaction(fn ->
+              Repo.delete(authorization)
+              authorization_from_auth(user, auth)
               user
             end) do
               {:ok, user} -> {:ok, user}
@@ -83,8 +92,8 @@ defmodule Evolution.UserFromAuth do
     end
   end
 
-  defp user_from_authorization(authorization, current_user, repo) do
-    case repo.one(Ecto.assoc(authorization, :user)) do
+  defp user_from_authorization(authorization, current_user) do
+    case Repo.one(Ecto.assoc(authorization, :user)) do
       nil -> {:error, :user_not_found}
       user ->
         if current_user && current_user.id != user.id do
@@ -95,26 +104,26 @@ defmodule Evolution.UserFromAuth do
     end
   end
 
-  defp create_user_from_auth(auth, current_user, repo) do
+  defp create_user_from_auth(auth, current_user) do
     user = current_user
-    if !user, do: user = repo.get_by(User, email: auth.info.email)
-    if !user, do: user = create_user(auth, repo)
-    authorization_from_auth(user, auth, repo)
+    unless user, do: user = Repo.get_by(User, login: auth.info.nickname)
+    unless user, do: user = create_user(auth)
+    authorization_from_auth(user, auth)
     {:ok, user}
   end
 
-  defp create_user(auth, repo) do
-    name = name_from_auth(auth)
-    result = User.registration_changeset(%User{}, scrub(%{email: auth.info.email, name: name}))
-    |> repo.insert
+  defp create_user(auth) do
+    result = %User{}
+    |> User.registration_changeset(scrub(%{login: auth.info.nickname}))
+    |> Repo.insert
     case result do
       {:ok, user} -> user
-      {:error, reason} -> repo.rollback(reason)
+      {:error, reason} -> Repo.rollback(reason)
     end
   end
 
-  defp auth_and_validate(%{provider: :identity} = auth, repo) do
-    case repo.get_by(Authorization, uid: uid_from_auth(auth), provider: to_string(auth.provider)) do
+  defp auth_and_validate(%{provider: :identity} = auth) do
+    case Repo.get_by(Authorization, uid: uid_from_auth(auth), provider: to_string(auth.provider)) do
       nil -> {:error, :not_found}
       authorization ->
         case auth.credentials.other.password do
@@ -129,34 +138,34 @@ defmodule Evolution.UserFromAuth do
     end
   end
 
-  defp auth_and_validate(%{provider: service} = auth, repo)  when service in [:google, :facebook, :github] do
-    case repo.get_by(Authorization, uid: uid_from_auth(auth), provider: to_string(auth.provider)) do
-      nil -> {:error, :not_found}
-      authorization ->
-        if authorization.uid == uid_from_auth(auth) do
-          authorization
-        else
-          {:error, :uid_mismatch}
-        end
-    end
-  end
+  # defp auth_and_validate(%{provider: service} = auth, repo)  when service in [:google, :facebook, :github] do
+  #   case repo.get_by(Authorization, uid: uid_from_auth(auth), provider: to_string(auth.provider)) do
+  #     nil -> {:error, :not_found}
+  #     authorization ->
+  #       if authorization.uid == uid_from_auth(auth) do
+  #         authorization
+  #       else
+  #         {:error, :uid_mismatch}
+  #       end
+  #   end
+  # end
 
-  defp auth_and_validate(auth, repo) do
-    case repo.get_by(Authorization, uid: uid_from_auth(auth), provider: to_string(auth.provider)) do
-      nil -> {:error, :not_found}
-      authorization ->
-        if authorization.token == auth.credentials.token do
-          authorization
-        else
-          {:error, :token_mismatch}
-        end
-    end
-  end
+  # defp auth_and_validate(auth, repo) do
+  #   case repo.get_by(Authorization, uid: uid_from_auth(auth), provider: to_string(auth.provider)) do
+  #     nil -> {:error, :not_found}
+  #     authorization ->
+  #       if authorization.token == auth.credentials.token do
+  #         authorization
+  #       else
+  #         {:error, :token_mismatch}
+  #       end
+  #   end
+  # end
 
-  defp authorization_from_auth(user, auth, repo) do
-    authorization = Ecto.build_assoc(user, :authorizations)
-    result = Authorization.changeset(
-      authorization,
+  defp authorization_from_auth(user, auth) do
+    result = user
+    |> Ecto.build_assoc(:authorizations)
+    |> Authorization.changeset(
       scrub(
         %{
           provider: to_string(auth.provider),
@@ -168,21 +177,12 @@ defmodule Evolution.UserFromAuth do
           password_confirmation: password_confirmation_from_auth(auth)
         }
       )
-    ) |> repo.insert
+    )
+    |> Repo.insert
 
     case result do
       {:ok, the_auth} -> the_auth
-      {:error, reason} -> repo.rollback(reason)
-    end
-  end
-
-  defp name_from_auth(auth) do
-    if auth.info.name do
-      auth.info.name
-    else
-      [auth.info.first_name, auth.info.last_name]
-      |> Enum.filter(&(&1 != nil and String.strip(&1) != ""))
-      |> Enum.join(" ")
+      {:error, reason} -> Repo.rollback(reason)
     end
   end
 
@@ -196,8 +196,8 @@ defmodule Evolution.UserFromAuth do
 
   defp token_from_auth(auth), do: auth.credentials.token
 
-  defp uid_from_auth(%{ provider: :slack } = auth), do: auth.credentials.other.user_id
-  defp uid_from_auth(auth), do: auth.uid
+  # defp uid_from_auth(%{ provider: :slack } = auth), do: auth.credentials.other.user_id
+  defp uid_from_auth(auth), do: auth.info.nickname
 
   defp password_from_auth(%{provider: :identity} = auth), do: auth.credentials.other.password
   defp password_from_auth(_), do: nil
