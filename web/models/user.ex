@@ -1,7 +1,4 @@
 defmodule Evolution.User do
-  @moduledoc """
-  """
-
   @derive {Poison.Encoder, only: [:id, :login]}
 
   use Evolution.Web, :model

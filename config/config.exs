@@ -5,6 +5,7 @@
 # is restricted to this project.
 use Mix.Config
 
+
 # Configures the endpoint
 config :evolution, Evolution.Endpoint,
   url: [host: "localhost"],
@@ -54,10 +55,3 @@ import_config "#{Mix.env}.exs"
 config :phoenix, :generators,
   migration: true,
   binary_id: false
-
-config :dogma,
-  rule_set: Dogma.RuleSet.All,
-  override: [
-    %Rule.LineLength{ max_length: 120 },
-    %Rule.ModuleDoc{}
-]

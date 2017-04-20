@@ -46,7 +46,7 @@ defmodule Evolution.Mixfile do
      {:phoenix_live_reload, "~> 1.0", only: :dev},
      {:gettext, "~> 0.9"},
      {:credo, "~> 0.7", only: [:dev, :test]},
-     {:dogma, "~> 0.1.14"},
+     {:dogma, "~> 0.1.15"},
      {:cowboy, "~> 1.0"}]
   end
 
