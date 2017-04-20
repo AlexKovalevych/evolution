@@ -24,7 +24,10 @@ config :evolution, ecto_repos: [Evolution.Repo]
 
 config :ueberauth, Ueberauth,
   providers: [
-    identity: {Ueberauth.Strategy.Identity, [callback_methods: ["POST"]]},
+    identity: {Ueberauth.Strategy.Identity, [
+                  callback_methods: ["POST"],
+                  uid_field: "login"
+                ]},
   ]
 
 config :guardian, Guardian,

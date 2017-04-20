@@ -33,7 +33,7 @@ update msg model =
                         Http.request
                             { method = "POST"
                             , headers = [ Http.header "x-csrf-token" model.csrf ]
-                            , url = "/login"
+                            , url = "/auth/identity/callback"
                             , body = body
                             , expect = Http.expectString
                             , timeout = Nothing
@@ -55,7 +55,12 @@ update msg model =
                                     | token = successLogin.token
                                     , user = Just successLogin.user
                                     , route = Home
-                                    , login = { loginModel | errors = Dict.empty }
+                                    , login =
+                                        { loginModel
+                                            | login = ""
+                                            , password = ""
+                                            , errors = Dict.empty
+                                        }
                                 }
                                     ! []
 

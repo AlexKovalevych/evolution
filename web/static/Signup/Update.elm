@@ -58,7 +58,13 @@ update msg model =
                                     | token = successSignup.token
                                     , user = Just successSignup.user
                                     , route = Home
-                                    , signup = { signupModel | errors = Dict.empty }
+                                    , signup =
+                                        { signupModel
+                                            | login = ""
+                                            , password = ""
+                                            , confirmPassword = ""
+                                            , errors = Dict.empty
+                                        }
                                 }
                                     ! []
 

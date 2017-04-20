@@ -7,6 +7,7 @@ defmodule Evolution.UserFromAuth do
 
   def get_or_insert(auth, current_user) do
     case auth_and_validate(auth) do
+      {:error, {:login, reason}} -> {:error, {:login, reason}}
       {:error, :not_found} -> register_user_from_auth(auth, current_user)
       {:error, reason} -> {:error, reason}
       authorization ->
@@ -23,7 +24,6 @@ defmodule Evolution.UserFromAuth do
     pw = Map.get(auth.credentials.other, :password)
     pwc = Map.get(auth.credentials.other, :password_confirmation)
     nickname = uid_from_auth(auth)
-    IO.inspect(nickname)
     case pw do
       nil ->
         {:error, {:password, dgettext("errors", "can't be blank")}}
@@ -131,18 +131,23 @@ defmodule Evolution.UserFromAuth do
   end
 
   defp auth_and_validate(%{provider: :identity} = auth) do
-    case Repo.get_by(Authorization, uid: uid_from_auth(auth), provider: to_string(auth.provider)) do
-      nil -> {:error, :not_found}
-      authorization ->
-        case auth.credentials.other.password do
-          pass when is_binary(pass) ->
-            if Comeonin.Bcrypt.checkpw(auth.credentials.other.password, authorization.token) do
-              authorization
-            else
-              {:error, :password_does_not_match}
-            end
-          _ -> {:error, :password_required}
-        end
+    uid = uid_from_auth(auth)
+    if uid == "" do
+      {:error, {:login, dgettext("errors", "can't be blank")}}
+    else
+      case Repo.get_by(Authorization, uid: uid, provider: to_string(auth.provider)) do
+        nil -> {:error, :not_found}
+        authorization ->
+          case auth.credentials.other.password do
+            pass when is_binary(pass) ->
+              if Comeonin.Bcrypt.checkpw(auth.credentials.other.password, authorization.token) do
+                authorization
+              else
+                {:error, {:login, dgettext("auth", "wrong credentials")}}
+              end
+            _ -> {:error, {:login, dgettext("auth", "wrong credentials")}}
+          end
+      end
     end
   end
 
@@ -205,7 +210,7 @@ defmodule Evolution.UserFromAuth do
   defp token_from_auth(auth), do: auth.credentials.token
 
   # defp uid_from_auth(%{ provider: :slack } = auth), do: auth.credentials.other.user_id
-  defp uid_from_auth(auth), do: to_string(auth.info.nickname)
+  defp uid_from_auth(auth), do: to_string(auth.uid)
 
   defp password_from_auth(%{provider: :identity} = auth), do: auth.credentials.other.password
   defp password_from_auth(_), do: nil
