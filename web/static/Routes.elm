@@ -5,4 +5,5 @@ type Route
     = Home
     | Login
     | Signup
+    | Games
     | NotFound

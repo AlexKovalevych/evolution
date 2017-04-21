@@ -10,6 +10,8 @@ import Login.View as LoginView
 import Home.View as HomeView
 import Signup.View as SignupView
 import NotFound.View as NotFoundView
+import Game.View as GameView
+import Material.Color as Color
 
 
 view : Model -> Html Msg
@@ -20,7 +22,10 @@ view model =
         ]
         { header = header model
         , drawer = []
-        , tabs = ( [], [] )
+        , tabs =
+            ( tabs model
+            , [ Color.background (Color.color Color.Teal Color.S400) ]
+            )
         , main = [ view_ model ]
         }
 
@@ -34,6 +39,9 @@ view_ model =
         Home ->
             HomeView.view model
 
+        Games ->
+            GameView.view model
+
         Routes.Signup ->
             SignupView.view model
 
@@ -44,11 +52,8 @@ view_ model =
 header : Model -> List (Html Msg)
 header model =
     let
-        isLoggedIn =
-            if model.user == Nothing then
-                False
-            else
-                True
+        loggedIn =
+            isLoggedIn model
     in
         [ Layout.row
             [ css "transition" "height 333ms ease-in-out 0s"
@@ -57,20 +62,36 @@ header model =
             , Layout.spacer
             , Layout.navigation []
                 [ Layout.link
-                    [ cs "hidden" |> when isLoggedIn
+                    [ cs "hidden" |> when loggedIn
                     , Options.onClick <| ChangePage Routes.Signup
                     ]
                     [ span [] [ text "Signup" ] ]
                 , Layout.link
-                    [ cs "hidden" |> when isLoggedIn
+                    [ cs "hidden" |> when loggedIn
                     , Options.onClick <| ChangePage Routes.Login
                     ]
                     [ span [] [ text "Login" ] ]
                 , Layout.link
-                    [ cs "hidden" |> when (not isLoggedIn)
+                    [ cs "hidden" |> when (not loggedIn)
                     , Options.onClick <| LogoutRequest
                     ]
                     [ span [] [ text "Logout" ] ]
                 ]
             ]
         ]
+
+
+isLoggedIn : Model -> Bool
+isLoggedIn model =
+    if model.user == Nothing then
+        False
+    else
+        True
+
+
+tabs : Model -> List (Html Msg)
+tabs model =
+    if isLoggedIn model then
+        [ div [] [ text "Games" ] ]
+    else
+        []

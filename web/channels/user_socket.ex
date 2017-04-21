@@ -1,12 +1,23 @@
 defmodule Evolution.UserSocket do
   use Phoenix.Socket
+  use Guardian.Phoenix.Socket
 
-  ## Channels
-  # channel "rooms:*", Evolution.RoomChannel
+  # Channels
+  channel "games:*", Evolution.GameChannel
 
-  ## Transports
+  # Transports
   transport :websocket, Phoenix.Transports.WebSocket
   # transport :longpoll, Phoenix.Transports.LongPoll
+
+  def connect(%{"guardian_token" => jwt} = params, socket) do
+    case sign_in(socket, jwt) do
+      {:ok, authed_socket, guardian_params} ->
+        {:ok, authed_socket}
+      _ ->
+        # unauthenticated socket
+        :error
+    end
+  end
 
   # Socket params are passed from the client and can
   # be used to verify and authenticate a user. After
@@ -20,7 +31,7 @@ defmodule Evolution.UserSocket do
   # See `Phoenix.Token` documentation for examples in
   # performing token verification on connect.
   def connect(_params, socket) do
-    {:ok, socket}
+    :error
   end
 
   # Socket id's are topics that allow you to identify all sockets for a given user:
@@ -33,5 +44,8 @@ defmodule Evolution.UserSocket do
   #     Evolution.Endpoint.broadcast("users_socket:#{user.id}", "disconnect", %{})
   #
   # Returning `nil` makes this socket anonymous.
-  def id(_socket), do: nil
+  def id(socket) do
+    user = current_resource(socket)
+    "users_socket:#{user.id}"
+  end
 end

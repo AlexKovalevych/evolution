@@ -7,11 +7,26 @@ import Routes exposing (Route(..))
 import Material
 import Login.Update as LoginUpdate
 import Signup.Update as SignupUpdate
+import Phoenix.Socket
 
 
 update : Msg -> Model -> ( Model, Cmd Msg )
 update msg model =
     case msg of
+        PhoenixMsg msg ->
+            case model.phxSocket of
+                Nothing ->
+                    model ! []
+
+                Just socket ->
+                    let
+                        ( phxSocket, phxCmd ) =
+                            Phoenix.Socket.update msg socket
+                    in
+                        ( { model | phxSocket = Just phxSocket }
+                        , Cmd.map PhoenixMsg phxCmd
+                        )
+
         Mdl msg_ ->
             Material.update Mdl msg_ model
 

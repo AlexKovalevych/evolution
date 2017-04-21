@@ -11,6 +11,7 @@ import Routes exposing (Route(..))
 import View exposing (view)
 import Login.Model as LoginModel
 import Signup.Model as SignupModel
+import Phoenix.Socket
 
 
 main : RouteUrlProgram Flags Model Msg
@@ -45,5 +46,16 @@ init flags =
         , route = route
         , login = LoginModel.model
         , signup = SignupModel.model
+        , phxSocket = Nothing
         }
             ! []
+
+
+subscriptions : Model -> Sub Msg
+subscriptions model =
+    case model.phxSocket of
+        Nothing ->
+            Sub.none
+
+        Just socket ->
+            Phoenix.Socket.listen socket PhoenixMsg
