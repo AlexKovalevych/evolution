@@ -1,4 +1,4 @@
-module Update exposing (update)
+port module Update exposing (update)
 
 import Http
 import Messages exposing (Msg(..))
@@ -8,6 +8,7 @@ import Material
 import Login.Update as LoginUpdate
 import Signup.Update as SignupUpdate
 import Phoenix.Socket
+import Json.Decode as D
 
 
 update : Msg -> Model -> ( Model, Cmd Msg )
@@ -43,7 +44,12 @@ update msg model =
             SignupUpdate.update signupMsg model
 
         LogoutResponse (Ok response) ->
-            { model | token = "", user = Nothing, route = Routes.Login } ! []
+            { model
+                | token = ""
+                , user = Nothing
+                , route = Routes.Login
+            }
+                ! [ reload True ]
 
         LogoutResponse (Err _) ->
             model ! []
@@ -66,3 +72,6 @@ update msg model =
 
         NoOp ->
             model ! []
+
+
+port reload : Bool -> Cmd msg
