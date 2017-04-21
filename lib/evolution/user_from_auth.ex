@@ -114,7 +114,7 @@ defmodule Evolution.UserFromAuth do
 
   defp create_user_from_auth(auth, current_user) do
     user = current_user
-    unless user, do: user = Repo.get_by(User, login: auth.info.nickname)
+    unless user, do: user = Repo.get_by(User, login: uid_from_auth(auth))
     unless user, do: user = create_user(auth)
     authorization_from_auth(user, auth)
     {:ok, user}
@@ -122,7 +122,7 @@ defmodule Evolution.UserFromAuth do
 
   defp create_user(auth) do
     result = %User{}
-    |> User.registration_changeset(scrub(%{login: auth.info.nickname}))
+    |> User.registration_changeset(scrub(%{login: uid_from_auth(auth)}))
     |> Repo.insert
     case result do
       {:ok, user} -> user

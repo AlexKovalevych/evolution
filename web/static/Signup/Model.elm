@@ -24,7 +24,7 @@ model =
 encoder : SignupModel -> Value
 encoder model =
     object
-        [ ( "nickname", string model.login )
+        [ ( "login", string model.login )
         , ( "password", string model.password )
         , ( "password_confirmation", string model.confirmPassword )
         ]
