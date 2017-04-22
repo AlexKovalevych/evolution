@@ -12,6 +12,7 @@ import View exposing (view)
 import Login.Model as LoginModel
 import Signup.Model as SignupModel
 import Phoenix.Socket
+import Native.Location
 
 
 main : RouteUrlProgram Flags Model Msg
@@ -21,7 +22,7 @@ main =
         , location2messages = parseUrl
         , init = init
         , view = view
-        , subscriptions = always Sub.none
+        , subscriptions = subscriptions
         , update = update
         }
 
@@ -46,9 +47,21 @@ init flags =
         , route = route
         , login = LoginModel.model
         , signup = SignupModel.model
-        , phxSocket = Nothing
+        , phxSocket = initSocket flags.token
         }
             ! []
+
+
+initSocket : String -> Maybe (Phoenix.Socket.Socket Msg)
+initSocket token =
+    if token == "" then
+        Nothing
+    else
+        let
+            location =
+                Native.Location.getLocation ()
+        in
+            Just <| Phoenix.Socket.init ("ws://" ++ location.host ++ "/socket/websocket?token=" ++ token)
 
 
 subscriptions : Model -> Sub Msg
@@ -58,4 +71,8 @@ subscriptions model =
             Sub.none
 
         Just socket ->
-            Phoenix.Socket.listen socket PhoenixMsg
+            let
+                _ =
+                    Debug.log "socket" socket
+            in
+                Phoenix.Socket.listen socket PhoenixMsg

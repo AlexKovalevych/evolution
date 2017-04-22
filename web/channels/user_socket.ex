@@ -9,7 +9,7 @@ defmodule Evolution.UserSocket do
   transport :websocket, Phoenix.Transports.WebSocket
   # transport :longpoll, Phoenix.Transports.LongPoll
 
-  def connect(%{"guardian_token" => jwt} = params, socket) do
+  def connect(%{"token" => jwt} = params, socket) do
     case sign_in(socket, jwt) do
       {:ok, authed_socket, guardian_params} ->
         {:ok, authed_socket}

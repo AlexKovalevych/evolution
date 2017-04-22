@@ -9,6 +9,7 @@ import Models.User exposing (User, userDecoder)
 import Json.Decode as D
 import Routes exposing (Route(..))
 import Dict
+import Phoenix.Socket
 
 
 update : LoginMsg -> Model -> ( Model, Cmd Msg )
@@ -55,6 +56,7 @@ update msg model =
                                     | token = successLogin.token
                                     , user = Just successLogin.user
                                     , route = Home
+                                    , phxSocket = Just <| Phoenix.Socket.init ""
                                     , login =
                                         { loginModel
                                             | login = ""
