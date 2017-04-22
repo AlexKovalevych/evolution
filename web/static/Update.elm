@@ -9,6 +9,7 @@ import Login.Update as LoginUpdate
 import Signup.Update as SignupUpdate
 import Phoenix.Socket
 import Json.Decode as D
+import Dict
 
 
 update : Msg -> Model -> ( Model, Cmd Msg )
@@ -31,11 +32,19 @@ update msg model =
         Mdl msg_ ->
             Material.update Mdl msg_ model
 
+        SelectTab k ->
+            case tabToRoute k of
+                Nothing ->
+                    model ! []
+
+                Just route ->
+                    { model | selectedTab = Just k, route = route } ! []
+
         ErrorPage ->
             { model | route = NotFound } ! []
 
         ChangePage route ->
-            { model | route = route } ! []
+            { model | route = route, selectedTab = routeToTab route } ! []
 
         Messages.Login loginMsg ->
             LoginUpdate.update loginMsg model
@@ -72,6 +81,23 @@ update msg model =
 
         NoOp ->
             model ! []
+
+
+tabRoutes : Dict.Dict Int Route
+tabRoutes =
+    Dict.fromList [ ( 0, Home ), ( 1, Games ) ]
+
+
+tabToRoute : Int -> Maybe Route
+tabToRoute tab =
+    Dict.get tab tabRoutes
+
+
+routeToTab : Route -> Maybe Int
+routeToTab route =
+    Dict.filter (\k v -> v == route) tabRoutes
+        |> Dict.keys
+        |> List.head
 
 
 port reload : Bool -> Cmd msg

@@ -35,6 +35,7 @@ route =
         [ map Home (s "")
         , map Routes.Login (s "login")
         , map Routes.Signup (s "signup")
+        , map Routes.Games (s "games")
         ]
 
 
@@ -46,6 +47,9 @@ routeToString route =
 
         Routes.Signup ->
             "signup"
+
+        Routes.Games ->
+            "games"
 
         Home ->
             ""

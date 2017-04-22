@@ -48,6 +48,7 @@ init flags =
         , login = LoginModel.model
         , signup = SignupModel.model
         , phxSocket = initSocket flags.token
+        , selectedTab = Nothing
         }
             ! []
 
@@ -71,8 +72,4 @@ subscriptions model =
             Sub.none
 
         Just socket ->
-            let
-                _ =
-                    Debug.log "socket" socket
-            in
-                Phoenix.Socket.listen socket PhoenixMsg
+            Phoenix.Socket.listen socket PhoenixMsg

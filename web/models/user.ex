@@ -12,6 +12,8 @@ defmodule Evolution.User do
 
     has_many :authorizations, Authorization, on_replace: :delete
 
+    many_to_many :games, Evolution.Game, join_through: "user_games"
+
     timestamps()
   end
 

@@ -16,18 +16,24 @@ import Material.Color as Color
 
 view : Model -> Html Msg
 view model =
-    Layout.render Mdl
-        model.mdl
-        [ Layout.fixedHeader
-        ]
-        { header = header model
-        , drawer = []
-        , tabs =
-            ( tabs model
-            , [ Color.background (Color.color Color.Teal Color.S400) ]
-            )
-        , main = [ view_ model ]
-        }
+    let
+        properties =
+            [ Layout.fixedHeader
+            , Layout.onSelectTab SelectTab
+            ]
+                ++ (selectTabProperty model)
+    in
+        Layout.render Mdl
+            model.mdl
+            properties
+            { header = header model
+            , drawer = []
+            , tabs =
+                ( tabs model
+                , [ Color.background (Color.color Color.Teal Color.S400) ]
+                )
+            , main = [ view_ model ]
+            }
 
 
 view_ : Model -> Html Msg
@@ -92,6 +98,18 @@ isLoggedIn model =
 tabs : Model -> List (Html Msg)
 tabs model =
     if isLoggedIn model then
-        [ div [] [ text "Games" ] ]
+        [ div [] [ text "Home" ]
+        , div [] [ text "Games" ]
+        ]
     else
         []
+
+
+selectTabProperty : Model -> List (Layout.Property Msg)
+selectTabProperty model =
+    case model.selectedTab of
+        Nothing ->
+            []
+
+        Just tab ->
+            [ Layout.selectedTab tab ]

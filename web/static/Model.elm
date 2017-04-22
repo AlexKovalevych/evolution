@@ -18,4 +18,5 @@ type alias Model =
     , login : LoginModel
     , signup : SignupModel
     , phxSocket : Maybe (Phoenix.Socket.Socket Msg)
+    , selectedTab : Maybe Int
     }

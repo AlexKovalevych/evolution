@@ -10,6 +10,7 @@ import Phoenix.Socket
 
 type Msg
     = Mdl (Material.Msg Msg)
+    | SelectTab Int
     | ErrorPage
     | ChangePage Route
     | Login LoginMsg
