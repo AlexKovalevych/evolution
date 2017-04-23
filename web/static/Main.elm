@@ -11,6 +11,7 @@ import Routes exposing (Route(..))
 import View exposing (view)
 import Login.Model as LoginModel
 import Signup.Model as SignupModel
+import Game.Model as GameModel
 import Phoenix.Socket
 import Native.Location
 
@@ -49,6 +50,7 @@ init flags =
         , signup = SignupModel.model
         , phxSocket = initSocket flags.token
         , selectedTab = Nothing
+        , games = GameModel.model
         }
             ! []
 

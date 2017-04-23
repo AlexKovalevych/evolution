@@ -3,6 +3,7 @@ module Model exposing (..)
 import Models.User exposing (User)
 import Login.Model exposing (LoginModel)
 import Signup.Model exposing (SignupModel)
+import Game.Model exposing (GameModel)
 import Messages exposing (Msg)
 import Routes exposing (Route)
 import Material
@@ -19,4 +20,5 @@ type alias Model =
     , signup : SignupModel
     , phxSocket : Maybe (Phoenix.Socket.Socket Msg)
     , selectedTab : Maybe Int
+    , games : GameModel
     }

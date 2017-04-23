@@ -98,8 +98,8 @@ isLoggedIn model =
 tabs : Model -> List (Html Msg)
 tabs model =
     if isLoggedIn model then
-        [ div [] [ text "Home" ]
-        , div [] [ text "Games" ]
+        [ div [] [ text "My games" ]
+        , div [] [ text "Search games" ]
         ]
     else
         []

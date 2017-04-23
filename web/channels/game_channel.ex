@@ -1,5 +1,6 @@
 defmodule Evolution.GameChannel do
   use Phoenix.Channel
+  alias Evolution.Repo
   import Guardian.Phoenix.Socket
   import Ecto.Query
   import Ecto.Query.API, only: [fragment: 1]
@@ -7,7 +8,7 @@ defmodule Evolution.GameChannel do
   def join("games:list", %{"page" => page}, socket) do
     user = current_resource(socket)
     page = Evolution.Game
-    |> join(:left, [g], ug in fragment("SELECT * FROM user_games AS ug WHERE ug.user_id = ?", ^user.id))
+    |> join(:left, [g], ug in fragment("SELECT * FROM user_games AS ug WHERE ug.user = ?", ^user.id))
     |> order_by(desc: :inserted_at)
     |> Repo.paginate(page: page)
 

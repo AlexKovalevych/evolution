@@ -7,8 +7,13 @@ import Routes exposing (Route(..))
 import Material
 import Login.Update as LoginUpdate
 import Signup.Update as SignupUpdate
+import Game.Update as GameUpdate
 import Phoenix.Socket
-import Json.Decode as D
+
+
+-- import Phoenix.Channel
+-- import Json.Decode as D
+
 import Dict
 
 
@@ -44,7 +49,13 @@ update msg model =
             { model | route = NotFound } ! []
 
         ChangePage route ->
-            { model | route = route, selectedTab = routeToTab route } ! []
+            case route of
+                Home ->
+                    { model | route = route, selectedTab = routeToTab route }
+                        |> GameUpdate.joinGamesChannel
+
+                _ ->
+                    { model | route = route, selectedTab = routeToTab route } ! []
 
         Messages.Login loginMsg ->
             LoginUpdate.update loginMsg model
