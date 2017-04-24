@@ -15,6 +15,9 @@ config :evolution, Evolution.Endpoint,
   pubsub: [name: Evolution.PubSub,
            adapter: Phoenix.PubSub.PG2]
 
+config :evolution, Evolution.Gettext,
+  default_locale: "ru"
+
 # Configures Elixir's Logger
 config :logger, :console,
   format: "$time $metadata[$level] $message\n",

@@ -7,6 +7,8 @@ msgstr ""
 "Language: en\n"
 
 ## From Ecto.Changeset.cast/4
+#: lib/evolution/user_from_auth.ex:29 lib/evolution/user_from_auth.ex:31
+#: lib/evolution/user_from_auth.ex:136
 msgid "can't be blank"
 msgstr ""
 
@@ -31,6 +33,7 @@ msgid "is reserved"
 msgstr ""
 
 ## From Ecto.Changeset.validate_confirmation/3
+#: lib/evolution/user_from_auth.ex:35
 msgid "does not match confirmation"
 msgstr ""
 
@@ -52,6 +55,7 @@ msgid_plural "should have %{count} item(s)"
 msgstr[0] ""
 msgstr[1] ""
 
+#: lib/evolution/user_from_auth.ex:46 lib/evolution/user_from_auth.ex:66
 msgid "should be at least %{count} character(s)"
 msgid_plural "should be at least %{count} character(s)"
 msgstr[0] ""
