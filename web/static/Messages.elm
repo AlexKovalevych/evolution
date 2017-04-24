@@ -5,6 +5,7 @@ import Material
 import Routes exposing (Route)
 import Login.Messages exposing (LoginMsg)
 import Signup.Messages exposing (SignupMsg)
+import Game.Messages exposing (GameMsg)
 import Phoenix.Socket
 
 
@@ -15,6 +16,7 @@ type Msg
     | ChangePage Route
     | Login LoginMsg
     | Signup SignupMsg
+    | Game GameMsg
     | LogoutRequest
     | LogoutResponse (Result Http.Error String)
     | PhoenixMsg (Phoenix.Socket.Msg Msg)

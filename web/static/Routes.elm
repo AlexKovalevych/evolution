@@ -5,5 +5,10 @@ type Route
     = Home
     | Login
     | Signup
-    | Games
+    | Games GameRoute
     | NotFound
+
+
+type GameRoute
+    = GameList
+    | NewGame

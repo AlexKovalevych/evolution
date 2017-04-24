@@ -6,6 +6,8 @@ import Messages exposing (Msg(..))
 import Material.Button as Button
 import Material.Grid exposing (grid, Device(..), size, cell, offset)
 import Material.Table as Table
+import Material.Options as Options
+import Routes exposing (Route(..), GameRoute(..))
 
 
 view : Model.Model -> Html Messages.Msg
@@ -20,6 +22,7 @@ view model =
                     model.mdl
                     [ Button.raised
                     , Button.colored
+                    , Options.onClick <| ChangePage <| Games NewGame
                     ]
                     [ text "New game" ]
                 ]

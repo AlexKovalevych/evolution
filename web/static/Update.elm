@@ -3,7 +3,7 @@ port module Update exposing (update)
 import Http
 import Messages exposing (Msg(..))
 import Model exposing (Model)
-import Routes exposing (Route(..))
+import Routes exposing (Route(..), GameRoute(..))
 import Material
 import Login.Update as LoginUpdate
 import Signup.Update as SignupUpdate
@@ -63,6 +63,9 @@ update msg model =
         Messages.Signup signupMsg ->
             SignupUpdate.update signupMsg model
 
+        Messages.Game gameMsg ->
+            GameUpdate.update gameMsg model
+
         LogoutResponse (Ok response) ->
             { model
                 | token = ""
@@ -94,19 +97,24 @@ update msg model =
             model ! []
 
 
-tabRoutes : Dict.Dict Int Route
+tabRoutes : Dict.Dict Int (List Route)
 tabRoutes =
-    Dict.fromList [ ( 0, Home ), ( 1, Games ) ]
+    Dict.fromList [ ( 0, [ Home, Games NewGame ] ), ( 1, [ Games GameList ] ) ]
 
 
 tabToRoute : Int -> Maybe Route
 tabToRoute tab =
-    Dict.get tab tabRoutes
+    case Dict.get tab tabRoutes of
+        Nothing ->
+            Nothing
+
+        Just routes ->
+            List.head routes
 
 
 routeToTab : Route -> Maybe Int
 routeToTab route =
-    Dict.filter (\k v -> v == route) tabRoutes
+    Dict.filter (\k v -> List.member route v) tabRoutes
         |> Dict.keys
         |> List.head
 

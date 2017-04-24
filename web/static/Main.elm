@@ -5,6 +5,7 @@ import Models.User exposing (User)
 import RouteUrl exposing (RouteUrlProgram, UrlChange)
 import Router exposing (parseUrl, delta2url)
 import Material
+import Material.Menu as Menu
 import Messages exposing (Msg(..))
 import Update exposing (update)
 import Routes exposing (Route(..))
@@ -69,6 +70,15 @@ initSocket token =
 
 subscriptions : Model -> Sub Msg
 subscriptions model =
+    let
+        phxSocketSub =
+            phoenixSub model
+    in
+        Sub.batch [ phxSocketSub, Menu.subs Mdl model.mdl ]
+
+
+phoenixSub : Model -> Sub Msg
+phoenixSub model =
     case model.phxSocket of
         Nothing ->
             Sub.none

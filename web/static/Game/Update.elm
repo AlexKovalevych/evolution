@@ -5,6 +5,14 @@ import Model exposing (Model)
 import Json.Encode as JE
 import Phoenix.Socket
 import Phoenix.Channel
+import Game.Messages exposing (GameMsg(..))
+
+
+update : GameMsg -> Model -> ( Model, Cmd Msg )
+update msg model =
+    case msg of
+        SetPlayers players ->
+            model ! []
 
 
 joinGamesChannel : Model -> ( Model, Cmd Msg )

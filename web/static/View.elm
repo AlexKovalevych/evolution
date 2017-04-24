@@ -45,7 +45,7 @@ view_ model =
         Home ->
             HomeView.view model
 
-        Games ->
+        Games _ ->
             GameView.view model
 
         Routes.Signup ->
