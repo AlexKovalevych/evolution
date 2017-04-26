@@ -1,13 +1,14 @@
 module Game.View exposing (..)
 
 import Html exposing (..)
-import Html.Events exposing (onSubmit)
 import Model exposing (Model)
 import Messages exposing (Msg(..))
 import Game.Messages exposing (GameMsg(..))
 import Routes exposing (Route(..), GameRoute(..))
 import Material.Grid exposing (grid, Device(..), size, cell, offset)
 import Material.Menu as Menu
+import Material.Button as Button
+import Material.Options as Options
 
 
 view : Model -> Html Msg
@@ -18,20 +19,38 @@ view model =
                 [ cell
                     [ size All 12
                     ]
-                    [ h1 [] [ text "New game" ]
+                    [ h1 [] [ text "Создать игру" ]
                     , div []
-                        [ Menu.render Mdl
-                            [ 0 ]
-                            model.mdl
-                            [ Menu.ripple, Menu.bottomLeft ]
-                          <|
-                            List.map
-                                (\i ->
-                                    Menu.item
-                                        [ Menu.onSelect <| Game <| SetPlayers i ]
-                                        [ text <| toString i ]
-                                )
-                                [ 2, 3, 4 ]
+                        [ label []
+                            [ text <| "Количество игроков: " ++ toString (model.games.newGamePlayers)
+                            , Menu.render Mdl
+                                [ 0 ]
+                                model.mdl
+                                [ Menu.ripple
+                                , Menu.bottomLeft
+                                , Menu.icon "supervisor_account"
+                                , Options.css "display" "inline-block"
+                                ]
+                              <|
+                                List.map
+                                    (\i ->
+                                        Menu.item
+                                            [ Menu.onSelect <| Game <| SetPlayers i ]
+                                            [ text <| toString i ]
+                                    )
+                                    [ 2, 3, 4 ]
+                            ]
+                        , h5 []
+                            [ Button.render Mdl
+                                [ 1 ]
+                                model.mdl
+                                [ Button.raised
+                                , Button.ripple
+                                , Button.colored
+                                , Options.onClick <| Game CreateGame
+                                ]
+                                [ text "Создать" ]
+                            ]
                         ]
                     ]
                 ]
