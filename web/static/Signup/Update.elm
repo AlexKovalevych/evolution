@@ -9,6 +9,9 @@ import Json.Decode as D
 import Models.User exposing (User, userDecoder)
 import Routes exposing (Route(..))
 import Dict
+import Socket exposing (initSocket)
+import Game.Update as GameUpdate
+import Tabs exposing (..)
 
 
 update : SignupMsg -> Model -> ( Model, Cmd Msg )
@@ -54,19 +57,19 @@ update msg model =
                                 model ! []
 
                             Ok successSignup ->
-                                { model
-                                    | token = successSignup.token
-                                    , user = Just successSignup.user
-                                    , route = Home
-                                    , signup =
-                                        { signupModel
-                                            | login = ""
-                                            , password = ""
-                                            , confirmPassword = ""
-                                            , errors = Dict.empty
-                                        }
-                                }
-                                    ! []
+                                let
+                                    toRoute =
+                                        Home
+                                in
+                                    { model
+                                        | token = successSignup.token
+                                        , user = Just successSignup.user
+                                        , route = toRoute
+                                        , phxSocket = initSocket successSignup.token
+                                        , signup = Signup.Model.model
+                                        , selectedTab = routeToTab toRoute
+                                    }
+                                        |> GameUpdate.joinGamesChannel
 
                     Ok errors ->
                         { model | signup = { signupModel | errors = errors } } ! []

@@ -10,6 +10,11 @@ msgid ""
 msgstr ""
 "Language: en\n"
 
-#: lib/evolution/user_from_auth.ex:146 lib/evolution/user_from_auth.ex:148
+#: lib/evolution/user_from_auth.ex:147 lib/evolution/user_from_auth.ex:154
+#: lib/evolution/user_from_auth.ex:156
 msgid "wrong credentials"
 msgstr ""
+
+#: lib/evolution/user_from_auth.ex:142
+msgid "user exists"
+msgstr "This user already exists"

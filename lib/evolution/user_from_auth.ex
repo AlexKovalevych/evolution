@@ -135,18 +135,27 @@ defmodule Evolution.UserFromAuth do
     if uid == "" do
       {:error, {:login, dgettext("errors", "can't be blank")}}
     else
-      case Repo.get_by(Authorization, uid: uid, provider: to_string(auth.provider)) do
-        nil -> {:error, :not_found}
-        authorization ->
-          case auth.credentials.other.password do
-            pass when is_binary(pass) ->
-              if Comeonin.Bcrypt.checkpw(auth.credentials.other.password, authorization.token) do
-                authorization
-              else
-                {:error, {:login, dgettext("auth", "wrong credentials")}}
-              end
-            _ -> {:error, {:login, dgettext("auth", "wrong credentials")}}
-          end
+      # Define whether its login or signup. Probably there is a better way to do this
+      if Map.has_key?(auth.extra.raw_info, "password_confirmation") do
+        case Repo.get_by(Authorization, uid: uid, provider: to_string(auth.provider)) do
+          nil -> {:error, :not_found}
+          authorization -> {:error, {:login, dgettext("auth", "user exists")}}
+        end
+      else
+        case Repo.get_by(Authorization, uid: uid, provider: to_string(auth.provider)) do
+          nil ->
+            {:error, {:login, dgettext("auth", "wrong credentials")}}
+          authorization ->
+            case auth.credentials.other.password do
+              pass when is_binary(pass) ->
+                if Comeonin.Bcrypt.checkpw(auth.credentials.other.password, authorization.token) do
+                  authorization
+                else
+                  {:error, {:login, dgettext("auth", "wrong credentials")}}
+                end
+              _ -> {:error, {:login, dgettext("auth", "wrong credentials")}}
+            end
+        end
       end
     end
   end

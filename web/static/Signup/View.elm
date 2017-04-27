@@ -28,7 +28,7 @@ view model =
                     [ Textfield.render Mdl
                         [ 0 ]
                         model.mdl
-                        [ Textfield.label "Login"
+                        [ Textfield.label "Логин"
                         , Textfield.floatingLabel
                         , Textfield.value model.signup.login
                         , Textfield.text_
@@ -43,7 +43,7 @@ view model =
                     [ Textfield.render Mdl
                         [ 1 ]
                         model.mdl
-                        [ Textfield.label "Password"
+                        [ Textfield.label "Пароль"
                         , Textfield.floatingLabel
                         , Textfield.password
                         , Textfield.value model.signup.password
@@ -58,7 +58,7 @@ view model =
                     [ Textfield.render Mdl
                         [ 2 ]
                         model.mdl
-                        [ Textfield.label "Confirm Password"
+                        [ Textfield.label "Повторите пароль"
                         , Textfield.floatingLabel
                         , Textfield.password
                         , Textfield.value model.signup.confirmPassword
@@ -76,7 +76,7 @@ view model =
                         [ Button.raised
                         , Button.colored
                         ]
-                        [ text "Signup" ]
+                        [ text "Регистрация" ]
                     ]
                 ]
             ]

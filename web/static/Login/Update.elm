@@ -9,7 +9,9 @@ import Models.User exposing (User, userDecoder)
 import Json.Decode as D
 import Routes exposing (Route(..))
 import Dict
-import Phoenix.Socket
+import Game.Update as GameUpdate
+import Socket exposing (initSocket)
+import Tabs exposing (..)
 
 
 update : LoginMsg -> Model -> ( Model, Cmd Msg )
@@ -52,19 +54,24 @@ update msg model =
                                 model ! []
 
                             Ok successLogin ->
-                                { model
-                                    | token = successLogin.token
-                                    , user = Just successLogin.user
-                                    , route = Home
-                                    , phxSocket = Just <| Phoenix.Socket.init ""
-                                    , login =
-                                        { loginModel
-                                            | login = ""
-                                            , password = ""
-                                            , errors = Dict.empty
-                                        }
-                                }
-                                    ! []
+                                let
+                                    toRoute =
+                                        Home
+                                in
+                                    { model
+                                        | token = successLogin.token
+                                        , user = Just successLogin.user
+                                        , route = toRoute
+                                        , phxSocket = initSocket successLogin.token
+                                        , selectedTab = routeToTab toRoute
+                                        , login =
+                                            { loginModel
+                                                | login = ""
+                                                , password = ""
+                                                , errors = Dict.empty
+                                            }
+                                    }
+                                        |> GameUpdate.joinGamesChannel
 
                     Ok errors ->
                         { model | login = { loginModel | errors = errors } } ! []

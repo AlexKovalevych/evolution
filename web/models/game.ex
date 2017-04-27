@@ -9,13 +9,14 @@ defmodule Evolution.Game do
 
   schema "games" do
     field :completed, :boolean, default: false
-    field :current_stage, :string
-    belongs_to :current_turn, Evolution.CurrentTurn
+    # field :current_stage, :string
+    field :players_number, :integer
+    # belongs_to :current_turn, Evolution.CurrentTurn
 
     timestamps()
   end
 
-  @required_fields ~w(completed current_stage current_turn)a
+  @required_fields ~w(completed players)a
 
   @doc """
   Builds a changeset based on the `struct` and `params`.

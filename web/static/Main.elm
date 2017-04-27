@@ -12,9 +12,10 @@ import Routes exposing (Route(..))
 import View exposing (view)
 import Login.Model as LoginModel
 import Signup.Model as SignupModel
+import Game.Update as GameUpdate
 import Game.Model as GameModel
 import Phoenix.Socket
-import Native.Location
+import Socket exposing (initSocket)
 
 
 main : RouteUrlProgram Flags Model Msg
@@ -53,19 +54,7 @@ init flags =
         , selectedTab = Nothing
         , games = GameModel.model
         }
-            ! []
-
-
-initSocket : String -> Maybe (Phoenix.Socket.Socket Msg)
-initSocket token =
-    if token == "" then
-        Nothing
-    else
-        let
-            location =
-                Native.Location.getLocation ()
-        in
-            Just <| Phoenix.Socket.init ("ws://" ++ location.host ++ "/socket/websocket?token=" ++ token)
+            |> GameUpdate.joinGamesChannel
 
 
 subscriptions : Model -> Sub Msg

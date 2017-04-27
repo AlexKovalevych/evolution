@@ -64,24 +64,24 @@ header model =
         [ Layout.row
             [ css "transition" "height 333ms ease-in-out 0s"
             ]
-            [ Layout.title [] [ text "Evolution" ]
+            [ Layout.title [] [ text "Эволюция" ]
             , Layout.spacer
             , Layout.navigation []
                 [ Layout.link
                     [ cs "hidden" |> when loggedIn
                     , Options.onClick <| ChangePage Routes.Signup
                     ]
-                    [ span [] [ text "Signup" ] ]
+                    [ span [] [ text "Регистрация" ] ]
                 , Layout.link
                     [ cs "hidden" |> when loggedIn
                     , Options.onClick <| ChangePage Routes.Login
                     ]
-                    [ span [] [ text "Login" ] ]
+                    [ span [] [ text "Вход" ] ]
                 , Layout.link
                     [ cs "hidden" |> when (not loggedIn)
                     , Options.onClick <| LogoutRequest
                     ]
-                    [ span [] [ text "Logout" ] ]
+                    [ span [] [ text "Выход" ] ]
                 ]
             ]
         ]
@@ -98,8 +98,8 @@ isLoggedIn model =
 tabs : Model -> List (Html Msg)
 tabs model =
     if isLoggedIn model then
-        [ div [] [ text "My games" ]
-        , div [] [ text "Search games" ]
+        [ div [] [ text "Мои игры" ]
+        , div [] [ text "Найти игру" ]
         ]
     else
         []

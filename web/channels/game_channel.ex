@@ -1,6 +1,7 @@
 defmodule Evolution.GameChannel do
   use Phoenix.Channel
   alias Evolution.Repo
+  alias Evolution.Game
   import Guardian.Phoenix.Socket
   import Ecto.Query
   import Ecto.Query.API, only: [fragment: 1]
@@ -20,9 +21,12 @@ defmodule Evolution.GameChannel do
   #   {:error,  :authentication_required}
   # end
 
-  # def handle_in("ping", _payload, socket) do
-  #   user = current_resource(socket)
-  #   broadcast(socket, "pong", %{message: "pong", from: user.email})
-  #   {:noreply, socket}
-  # end
+  def handle_in("new:game", %{"players" => players}, socket) do
+    user = current_resource(socket)
+    game = Game
+    |> Game.changeset(%{players: players})
+    |> Repo.insert!
+    broadcast(socket, "new:game", %{game: game})
+    {:noreply, socket}
+  end
 end

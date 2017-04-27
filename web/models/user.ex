@@ -40,35 +40,6 @@ defmodule Evolution.User do
     |> validate_required(@required_fields)
   end
 
-  @doc """
-  Returns user from auth or error with reason
-  """
-  # def from_auth(%{provider: :identity} = auth) do
-  #   user = __MODULE__
-  #   |> select([u], u)
-  #   |> preload(:authorizations)
-  #   |> Repo.get_by(login: uid_from_auth(auth))
-  #   case user do
-  #     nil -> {:error, dgettext("login", "invalid_credentials")}
-  #     user ->
-  #       with {:ok, authorization} <- provider_auth(user, auth.provider),
-  #            true                 <- Comeonin.Bcrypt.checkpw(auth.credentials.other.password, authorization.token) do
-  #         user
-  #         |> login()
-  #         |> Repo.update
-  #       else
-  #         true -> {:error, dgettext("login", "user_disabled")}
-  #       false ->
-  #           user
-  #           |> login_failed()
-  #           |> Repo.update!
-  #           {:error, dgettext("login", "invalid_credentials")}
-  #         {:error, reason} -> {:error, reason}
-  #       end
-  #   end
-  # end
-
-
   defp token_from_auth(%{provider: :identity} = auth) do
     case auth do
       %{ credentials: %{ other: %{ password: pass } } } when not is_nil(pass) ->
@@ -87,7 +58,8 @@ defmodule Evolution.User do
 
   # We don't have any nested structures in our params that we are using scrub with so this is a very simple scrub
   defp scrub(params) do
-    result = Enum.filter(params, fn
+    result = params
+    |> Enum.filter(fn
       {key, val} when is_binary(val) -> String.strip(val) != ""
       {key, val} when is_nil(val) -> false
       _ -> true
