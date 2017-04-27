@@ -16,7 +16,7 @@ defmodule Evolution.Game do
     timestamps()
   end
 
-  @required_fields ~w(completed players)a
+  @required_fields ~w(completed players_number)a
 
   @doc """
   Builds a changeset based on the `struct` and `params`.

@@ -23,8 +23,8 @@ defmodule Evolution.GameChannel do
 
   def handle_in("new:game", %{"players" => players}, socket) do
     user = current_resource(socket)
-    game = Game
-    |> Game.changeset(%{players: players})
+    game = %Game{}
+    |> Game.changeset(%{players_number: players})
     |> Repo.insert!
     broadcast(socket, "new:game", %{game: game})
     {:noreply, socket}
