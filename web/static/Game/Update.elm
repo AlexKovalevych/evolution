@@ -82,6 +82,9 @@ update msg model =
                     else
                         newModel ! []
 
+            SearchGames ->
+                searchGames model
+
             ReloadPage ->
                 case model.route of
                     Routes.Home ->
@@ -132,6 +135,31 @@ loadGames model =
                             |> Phoenix.Push.withPayload payload
                             |> Phoenix.Push.onOk (\v -> Game <| LoadGames v)
 
+                    ( phxSocket, phxCmd ) =
+                        Phoenix.Socket.push channel socket
+                in
+                    { model | phxSocket = Just phxSocket }
+                        ! [ Cmd.map PhoenixMsg phxCmd ]
+            else
+                model ! []
+
+
+searchGames : Model -> ( Model, Cmd Msg )
+searchGames model =
+    case model.phxSocket of
+        Nothing ->
+            model ! []
+
+        Just socket ->
+            if List.member GamesChannel model.channels then
+                let
+                    -- payload =
+                    --     (JE.object [ ( "page", JE.int model.games.page ) ])
+                    channel =
+                        Phoenix.Push.init "games:search" gamesChannel
+
+                    -- |> Phoenix.Push.withPayload payload
+                    -- |> Phoenix.Push.onOk (\v -> Game <| LoadGames v)
                     ( phxSocket, phxCmd ) =
                         Phoenix.Socket.push channel socket
                 in

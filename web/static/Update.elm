@@ -40,7 +40,15 @@ update msg model =
             in
                 case channel of
                     GamesChannel ->
-                        GameUpdate.loadGames newModel
+                        case model.route of
+                            Home ->
+                                GameUpdate.loadGames newModel
+
+                            Games GameList ->
+                                GameUpdate.searchGames newModel
+
+                            _ ->
+                                model ! []
 
         Mdl msg_ ->
             Material.update Mdl msg_ model
@@ -67,6 +75,9 @@ update msg model =
                 case route of
                     Home ->
                         GameUpdate.loadGames newModel
+
+                    Games GameList ->
+                        GameUpdate.searchGames newModel
 
                     _ ->
                         newModel ! []

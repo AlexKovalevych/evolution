@@ -29,6 +29,11 @@ defmodule Evolution.GameChannel do
     {:reply, {:ok, %{games: page.entries, total_pages: page.total_pages, page: page.page_number}}, socket}
   end
 
+  def handle_in("games:search", payload, socket) do
+    user = current_resource(socket)
+    {:reply, {:ok, %{}}, socket}
+  end
+
   def user_games(user, %{"page" => page}) do
     Evolution.Game
     |> join(:left, [g], ug in fragment("SELECT * FROM user_games AS ug WHERE ug.user = ?", ^user.id))
