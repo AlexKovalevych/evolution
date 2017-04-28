@@ -8,6 +8,10 @@ import Material.Grid exposing (grid, Device(..), size, cell, offset)
 import Material.Table as Table
 import Material.Options as Options
 import Routes exposing (Route(..), GameRoute(..))
+import Game.Model exposing (Game)
+import Date
+import Date.Extra.Config.Config_ru_ru exposing (config)
+import Date.Extra.Format as Format exposing (isoString, format)
 
 
 view : Model.Model -> Html Messages.Msg
@@ -16,7 +20,7 @@ view model =
         [ cell
             [ size All 12
             ]
-            [ div []
+            [ p []
                 [ Button.render Mdl
                     [ 0 ]
                     model.mdl
@@ -24,7 +28,7 @@ view model =
                     , Button.colored
                     , Options.onClick <| ChangePage <| Games NewGame
                     ]
-                    [ text "New game" ]
+                    [ text "Создать игру" ]
                 ]
             , Table.table
                 []
@@ -33,9 +37,42 @@ view model =
                         [ Table.th [] [ text "# of Players" ]
                         , Table.th [] [ text "Started" ]
                         , Table.th [] [ text "Last update" ]
+                        , Table.th [] []
                         ]
                     ]
-                , Table.tbody [] []
+                , Table.tbody [] <| renderGames model
                 ]
             ]
         ]
+
+
+renderGames : Model -> List (Html Messages.Msg)
+renderGames model =
+    List.indexedMap (\i game -> renderGame i game model) model.games.games
+
+
+renderGame : Int -> Game -> Model.Model -> Html Messages.Msg
+renderGame index game model =
+    Table.tr
+        []
+        [ Table.td [] [ text <| toString game.players_number ]
+        , Table.td [] [ text <| formatDate game.inserted_at ]
+        , Table.td [] [ text <| formatDate game.updated_at ]
+        , Table.td []
+            [ Button.render Mdl
+                [ index + 1 ]
+                model.mdl
+                [ Button.raised ]
+                [ text "Открыть" ]
+            ]
+        ]
+
+
+formatDate : String -> String
+formatDate value =
+    case Date.fromString value of
+        Ok date ->
+            format config "%Y-%m-%d %H:%M:%S" date
+
+        Err _ ->
+            ""

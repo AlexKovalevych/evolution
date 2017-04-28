@@ -7,6 +7,8 @@ defmodule Evolution.Game do
 
   use Evolution.Web, :model
 
+  @derive {Poison.Encoder, only: [:id, :completed, :players_number, :inserted_at, :updated_at]}
+
   schema "games" do
     field :completed, :boolean, default: false
     # field :current_stage, :string

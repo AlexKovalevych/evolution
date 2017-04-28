@@ -8,7 +8,6 @@ import Messages exposing (Msg(..))
 import Json.Decode as D
 import Models.User exposing (User, userDecoder)
 import Routes exposing (Route(..))
-import Dict
 import Socket exposing (initSocket)
 import Game.Update as GameUpdate
 import Tabs exposing (..)

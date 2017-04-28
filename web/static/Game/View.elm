@@ -21,7 +21,7 @@ view model =
                     ]
                     [ h1 [] [ text "Создать игру" ]
                     , div []
-                        [ label []
+                        [ p []
                             [ text <| "Количество игроков: " ++ toString (model.games.newGamePlayers)
                             , Menu.render Mdl
                                 [ 0 ]
@@ -40,7 +40,7 @@ view model =
                                     )
                                     [ 2, 3, 4 ]
                             ]
-                        , h5 []
+                        , p []
                             [ Button.render Mdl
                                 [ 1 ]
                                 model.mdl

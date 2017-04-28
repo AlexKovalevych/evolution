@@ -3,9 +3,11 @@ module Game.Update exposing (..)
 import Messages exposing (Msg(..))
 import Model exposing (Model)
 import Json.Encode as JE
+import Json.Decode as JD
 import Phoenix.Socket
 import Phoenix.Channel
 import Game.Messages exposing (GameMsg(..))
+import Game.Model exposing (decodeGamesResponse)
 import Phoenix.Socket
 import Phoenix.Push
 import Routes exposing (GameRoute(..))
@@ -25,6 +27,18 @@ update msg model =
         case msg of
             SetPlayers players ->
                 { model | games = { gamesModel | newGamePlayers = players } } ! []
+
+            LoadGames value ->
+                case JD.decodeValue decodeGamesResponse value of
+                    Err reason ->
+                        let
+                            _ =
+                                Debug.log "reason" reason
+                        in
+                            model ! []
+
+                    Ok gamesResponse ->
+                        { model | games = { gamesModel | games = gamesResponse.games } } ! []
 
             CreateGame ->
                 case model.phxSocket of
@@ -61,8 +75,8 @@ joinGamesChannel model =
                 channel =
                     Phoenix.Channel.init gamesChannel
                         |> Phoenix.Channel.withPayload payload
+                        |> Phoenix.Channel.onJoin (\v -> Game <| LoadGames v)
 
-                -- |> Phoenix.Channel.onJoin (always (ShowJoinedMessage "rooms:lobby"))
                 -- |> Phoenix.Channel.onClose (always (ShowLeftMessage "rooms:lobby"))
                 ( phxSocket, phxCmd ) =
                     Phoenix.Socket.join channel socket
