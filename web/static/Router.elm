@@ -37,6 +37,7 @@ route =
         , map Routes.Signup (s "signup")
         , map (Routes.Games Routes.GameList) (s "games")
         , map (Routes.Games Routes.NewGame) (s "games" </> s "new")
+        , map (Routes.Games << Routes.ViewGame) (s "games" </> s "view" </> int)
         ]
 
 
@@ -60,6 +61,9 @@ routeToString route =
 
                     Routes.NewGame ->
                         prefix ++ [ "new" ]
+
+                    Routes.ViewGame id ->
+                        prefix ++ [ "view", toString id ]
 
         _ ->
             [ "" ]

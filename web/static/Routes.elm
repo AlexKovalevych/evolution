@@ -12,3 +12,4 @@ type Route
 type GameRoute
     = GameList
     | NewGame
+    | ViewGame Int

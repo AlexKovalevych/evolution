@@ -7,7 +7,7 @@ import Json.Decode as JD
 import Phoenix.Socket
 import Phoenix.Channel
 import Game.Messages exposing (GameMsg(..))
-import Game.Model exposing (decodeGamesResponse)
+import Game.Model exposing (decodeGamesResponse, decodeGame)
 import Phoenix.Socket
 import Phoenix.Push
 import Routes exposing (GameRoute(..))
@@ -53,7 +53,15 @@ update msg model =
                             push =
                                 Phoenix.Push.init "new:game" gamesChannel
                                     |> Phoenix.Push.withPayload payload
-                                    |> Phoenix.Push.onOk (\_ -> ChangePage <| Routes.Games GameList)
+                                    |> Phoenix.Push.onOk
+                                        (\value ->
+                                            case JD.decodeValue decodeGame value of
+                                                Err _ ->
+                                                    NoOp
+
+                                                Ok game ->
+                                                    ChangePage <| Routes.Games <| ViewGame game.id
+                                        )
 
                             ( socket_, cmd ) =
                                 Phoenix.Socket.push push socket

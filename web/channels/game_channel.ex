@@ -26,7 +26,7 @@ defmodule Evolution.GameChannel do
     game = %Game{}
     |> Game.changeset(%{players_number: players})
     |> Repo.insert!
-    broadcast(socket, "new:game", %{game: game})
-    {:noreply, socket}
+    # broadcast(socket, "new:game", %{game: game})
+    {:reply, {:ok, game}, socket}
   end
 end

@@ -44,6 +44,7 @@ update msg model =
             { model | route = NotFound } ! []
 
         ChangePage route ->
+            -- if route is games list - need to load games according to current page
             { model | route = route, selectedTab = routeToTab route } ! []
 
         Messages.Login loginMsg ->

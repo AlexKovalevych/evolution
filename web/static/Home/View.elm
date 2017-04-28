@@ -34,9 +34,9 @@ view model =
                 []
                 [ Table.thead []
                     [ Table.tr []
-                        [ Table.th [] [ text "# of Players" ]
-                        , Table.th [] [ text "Started" ]
-                        , Table.th [] [ text "Last update" ]
+                        [ Table.th [] [ text "# игроков" ]
+                        , Table.th [] [ text "Время создания" ]
+                        , Table.th [] [ text "Время обновления" ]
                         , Table.th [] []
                         ]
                     ]
@@ -62,7 +62,9 @@ renderGame index game model =
             [ Button.render Mdl
                 [ index + 1 ]
                 model.mdl
-                [ Button.raised ]
+                [ Button.raised
+                , Options.onClick <| ChangePage <| Games <| ViewGame game.id
+                ]
                 [ text "Открыть" ]
             ]
         ]

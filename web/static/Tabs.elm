@@ -21,6 +21,18 @@ tabToRoute tab =
 
 routeToTab : Route -> Maybe Int
 routeToTab route =
-    Dict.filter (\k v -> List.member route v) tabRoutes
-        |> Dict.keys
-        |> List.head
+    case route of
+        Home ->
+            Just 0
+
+        Games NewGame ->
+            Just 0
+
+        Games (ViewGame _) ->
+            Just 0
+
+        Games GameList ->
+            Just 1
+
+        _ ->
+            Nothing

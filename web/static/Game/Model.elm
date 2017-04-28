@@ -19,7 +19,8 @@ type alias GameModel =
 
 
 type alias Game =
-    { players_number : Int
+    { id : Int
+    , players_number : Int
     , inserted_at : String
     , updated_at : String
     }
@@ -40,7 +41,8 @@ decodeGamesResponse =
 
 decodeGame : JD.Decoder Game
 decodeGame =
-    JD.map3 Game
+    JD.map4 Game
+        (JD.field "id" JD.int)
         (JD.field "players_number" JD.int)
         (JD.field "inserted_at" JD.string)
         (JD.field "updated_at" JD.string)
