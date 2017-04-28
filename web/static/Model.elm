@@ -8,6 +8,7 @@ import Messages exposing (Msg)
 import Routes exposing (Route)
 import Material
 import Phoenix.Socket
+import Channel exposing (Channel)
 
 
 type alias Model =
@@ -19,7 +20,7 @@ type alias Model =
     , login : LoginModel
     , signup : SignupModel
     , phxSocket : Maybe (Phoenix.Socket.Socket Msg)
-    , channels : List String
+    , channels : List Channel
     , selectedTab : Maybe Int
     , games : GameModel
     }

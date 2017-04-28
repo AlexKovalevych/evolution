@@ -7,6 +7,7 @@ import Login.Messages exposing (LoginMsg)
 import Signup.Messages exposing (SignupMsg)
 import Game.Messages exposing (GameMsg)
 import Phoenix.Socket
+import Channel exposing (Channel)
 
 
 type Msg
@@ -20,5 +21,5 @@ type Msg
     | LogoutRequest
     | LogoutResponse (Result Http.Error String)
     | PhoenixMsg (Phoenix.Socket.Msg Msg)
-    | JoinChannel String
+    | JoinChannel Channel
     | NoOp

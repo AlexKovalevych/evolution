@@ -9,6 +9,8 @@ model =
     , totalPages = 1
     , games = []
     , newGamePlayers = 2
+    , searchPlayers = 2
+    , foundGames = []
     }
 
 
@@ -17,6 +19,8 @@ type alias GameModel =
     , totalPages : Int
     , games : List Game
     , newGamePlayers : Int
+    , searchPlayers : Int
+    , foundGames : List Game
     }
 
 

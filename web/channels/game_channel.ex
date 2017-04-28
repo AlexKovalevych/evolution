@@ -6,7 +6,7 @@ defmodule Evolution.GameChannel do
   import Ecto.Query
   import Ecto.Query.API, only: [fragment: 1]
 
-  def join("games:list" = topic, _payload, socket) do
+  def join("games:list", _payload, socket) do
     {:ok, socket}
   end
 
@@ -14,7 +14,7 @@ defmodule Evolution.GameChannel do
   #   {:error,  :authentication_required}
   # end
 
-  def handle_in("new:game", %{"players" => players}, socket) do
+  def handle_in("games:new", %{"players" => players}, socket) do
     user = current_resource(socket)
     game = %Game{}
     |> Game.changeset(%{players_number: players})

@@ -11,7 +11,7 @@ import Game.Model exposing (decodeGamesResponse, decodeGame)
 import Phoenix.Socket
 import Phoenix.Push
 import Routes exposing (GameRoute(..))
-import Socket exposing (gamesChannel)
+import Channel exposing (gamesChannel, Channel(..))
 
 
 update : GameMsg -> Model -> ( Model, Cmd Msg )
@@ -55,7 +55,7 @@ update msg model =
                                 JE.object [ ( "players", JE.int gamesModel.newGamePlayers ) ]
 
                             push =
-                                Phoenix.Push.init "new:game" gamesChannel
+                                Phoenix.Push.init "games:new" gamesChannel
                                     |> Phoenix.Push.withPayload payload
                                     |> Phoenix.Push.onOk
                                         (\value ->
@@ -105,7 +105,7 @@ joinGamesChannel model =
                 let
                     channel =
                         Phoenix.Channel.init gamesChannel
-                            |> Phoenix.Channel.onJoin (\_ -> JoinChannel gamesChannel)
+                            |> Phoenix.Channel.onJoin (\_ -> JoinChannel GamesChannel)
 
                     -- |> Phoenix.Channel.onClose (always (ShowLeftMessage "rooms:lobby"))
                     ( phxSocket, phxCmd ) =
@@ -122,7 +122,7 @@ loadGames model =
             model ! []
 
         Just socket ->
-            if List.member gamesChannel model.channels then
+            if List.member GamesChannel model.channels then
                 let
                     payload =
                         (JE.object [ ( "page", JE.int model.games.page ) ])
