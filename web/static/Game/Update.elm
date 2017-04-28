@@ -34,7 +34,14 @@ update msg model =
                             model ! []
 
                     Ok gamesResponse ->
-                        { model | games = { gamesModel | games = gamesResponse.games } } ! []
+                        { model
+                            | games =
+                                { gamesModel
+                                    | games = gamesResponse.games
+                                    , totalPages = gamesResponse.total_pages
+                                }
+                        }
+                            ! []
 
             CreateGame ->
                 case model.phxSocket of
@@ -64,6 +71,13 @@ update msg model =
                         in
                             { model | phxSocket = Just socket_ } ! [ Cmd.map PhoenixMsg cmd ]
 
+            SetPage page ->
+                let
+                    newModel =
+                        { model | games = { gamesModel | page = page } }
+                in
+                    loadGames newModel
+
 
 joinGamesChannel : Model -> ( Model, Cmd Msg )
 joinGamesChannel model =
@@ -84,6 +98,29 @@ joinGamesChannel model =
                 -- |> Phoenix.Channel.onClose (always (ShowLeftMessage "rooms:lobby"))
                 ( phxSocket, phxCmd ) =
                     Phoenix.Socket.join channel socket
+            in
+                { model | phxSocket = Just phxSocket }
+                    ! [ Cmd.map PhoenixMsg phxCmd ]
+
+
+loadGames : Model -> ( Model, Cmd Msg )
+loadGames model =
+    case model.phxSocket of
+        Nothing ->
+            model ! []
+
+        Just socket ->
+            let
+                payload =
+                    (JE.object [ ( "page", JE.int model.games.page ) ])
+
+                channel =
+                    Phoenix.Push.init "games:list" gamesChannel
+                        |> Phoenix.Push.withPayload payload
+                        |> Phoenix.Push.onOk (\v -> Game <| LoadGames v)
+
+                ( phxSocket, phxCmd ) =
+                    Phoenix.Socket.push channel socket
             in
                 { model | phxSocket = Just phxSocket }
                     ! [ Cmd.map PhoenixMsg phxCmd ]

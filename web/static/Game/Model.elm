@@ -6,6 +6,7 @@ import Json.Decode as JD
 model : GameModel
 model =
     { page = 1
+    , totalPages = 1
     , games = []
     , newGamePlayers = 2
     }
@@ -13,6 +14,7 @@ model =
 
 type alias GameModel =
     { page : Int
+    , totalPages : Int
     , games : List Game
     , newGamePlayers : Int
     }

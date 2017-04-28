@@ -11,9 +11,6 @@ import Game.Update as GameUpdate
 import Game.Messages exposing (GameMsg(..))
 import Phoenix.Socket
 import Tabs exposing (..)
-import Socket exposing (gamesChannel)
-import Json.Encode as JE
-import Phoenix.Push
 import Phoenix.Socket
 
 
@@ -58,25 +55,7 @@ update msg model =
             in
                 case route of
                     Home ->
-                        case model.phxSocket of
-                            Nothing ->
-                                newModel ! []
-
-                            Just socket ->
-                                let
-                                    payload =
-                                        (JE.object [ ( "page", JE.int model.games.page ) ])
-
-                                    channel =
-                                        Phoenix.Push.init "games:list" gamesChannel
-                                            |> Phoenix.Push.withPayload payload
-                                            |> Phoenix.Push.onOk (\v -> Game <| LoadGames v)
-
-                                    ( phxSocket, phxCmd ) =
-                                        Phoenix.Socket.push channel socket
-                                in
-                                    { newModel | phxSocket = Just phxSocket }
-                                        ! [ Cmd.map PhoenixMsg phxCmd ]
+                        GameUpdate.loadGames newModel
 
                     _ ->
                         newModel ! []

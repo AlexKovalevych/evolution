@@ -2,21 +2,52 @@ module Router exposing (parseUrl, delta2url)
 
 import Model exposing (Model)
 import Navigation exposing (Location)
-import UrlParser exposing (..)
+import RouteParser exposing (..)
+import RouteParser.QueryString as QueryString
 import RouteUrl exposing (UrlChange)
-import RouteUrl.Builder exposing (newEntry, toUrlChange, builder, Builder, replacePath)
+import RouteUrl.Builder exposing (newEntry, toUrlChange, builder, Builder, replacePath, replaceQuery)
 import Messages exposing (Msg(..))
+import Game.Messages exposing (GameMsg(..))
 import Routes exposing (Route(..), GameRoute(..))
+import Dict
+import String
 
 
 parseUrl : Location -> List Msg
 parseUrl location =
-    case UrlParser.parsePath route location of
+    case match matchers location.pathname of
         Nothing ->
             [ ErrorPage ]
 
         Just route ->
-            [ ChangePage route ]
+            case route of
+                Home ->
+                    let
+                        params =
+                            QueryString.parse location.search
+
+                        page =
+                            case Dict.get "page" params of
+                                Nothing ->
+                                    1
+
+                                Just values ->
+                                    case List.head (values) of
+                                        Nothing ->
+                                            1
+
+                                        Just page ->
+                                            case String.toInt page of
+                                                Ok value ->
+                                                    value
+
+                                                Err _ ->
+                                                    1
+                    in
+                        [ Game <| SetPage page, ChangePage route ]
+
+                _ ->
+                    [ ChangePage route ]
 
 
 delta2url : Model -> Model -> Maybe UrlChange
@@ -25,20 +56,30 @@ delta2url previous current =
         (builder
             |> newEntry
             |> replacePath (routeToString current.route)
+            |> replaceQuery (routeToQuery current)
             |> Just
         )
 
 
-route : Parser (Route -> a) a
-route =
-    oneOf
-        [ map Home (s "")
-        , map Routes.Login (s "login")
-        , map Routes.Signup (s "signup")
-        , map (Routes.Games Routes.GameList) (s "games")
-        , map (Routes.Games Routes.NewGame) (s "games" </> s "new")
-        , map (Routes.Games << Routes.ViewGame) (s "games" </> s "view" </> int)
-        ]
+matchers : List (Matcher Route)
+matchers =
+    [ static Home "/"
+    , static Routes.Login "/login"
+    , static Routes.Signup "/signup"
+    , static (Routes.Games Routes.GameList) "/games"
+    , static (Routes.Games Routes.NewGame) "/games/new"
+    , dyn1 (Routes.Games << Routes.ViewGame) "/games/view" int ""
+    ]
+
+
+routeToQuery : Model -> Dict.Dict String String
+routeToQuery model =
+    case model.route of
+        Home ->
+            Dict.fromList [ ( "page", toString (model.games.page) ) ]
+
+        _ ->
+            Dict.empty
 
 
 routeToString : Route -> List String
