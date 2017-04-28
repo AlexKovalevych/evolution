@@ -44,7 +44,7 @@ parseUrl location =
                                                 Err _ ->
                                                     1
                     in
-                        [ Game <| SetPage page, ChangePage route ]
+                        [ ChangePage route, Game <| SetPage False page ]
 
                 _ ->
                     [ ChangePage route ]

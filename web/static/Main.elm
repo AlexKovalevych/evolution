@@ -51,6 +51,7 @@ init flags =
         , login = LoginModel.model
         , signup = SignupModel.model
         , phxSocket = initSocket flags.token
+        , channels = []
         , selectedTab = Nothing
         , games = GameModel.model
         }

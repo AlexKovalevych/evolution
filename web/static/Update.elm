@@ -8,10 +8,10 @@ import Material
 import Login.Update as LoginUpdate
 import Signup.Update as SignupUpdate
 import Game.Update as GameUpdate
-import Game.Messages exposing (GameMsg(..))
 import Phoenix.Socket
 import Tabs exposing (..)
 import Phoenix.Socket
+import Socket exposing (gamesChannel)
 
 
 update : Msg -> Model -> ( Model, Cmd Msg )
@@ -30,6 +30,18 @@ update msg model =
                         ( { model | phxSocket = Just phxSocket }
                         , Cmd.map PhoenixMsg phxCmd
                         )
+
+        JoinChannel name ->
+            let
+                _ =
+                    Debug.log "joined" name
+
+                newModel =
+                    { model | channels = name :: model.channels }
+            in
+                case name of
+                    gamesChannel ->
+                        GameUpdate.loadGames newModel
 
         Mdl msg_ ->
             Material.update Mdl msg_ model

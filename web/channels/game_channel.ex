@@ -6,10 +6,8 @@ defmodule Evolution.GameChannel do
   import Ecto.Query
   import Ecto.Query.API, only: [fragment: 1]
 
-  def join("games:list" = topic, payload, socket) do
-    user = current_resource(socket)
-    page = user_games(user, payload)
-    {:ok, %{games: page.entries, total_pages: page.total_pages}, socket}
+  def join("games:list" = topic, _payload, socket) do
+    {:ok, socket}
   end
 
   # def join(room, _, socket) do
@@ -28,7 +26,7 @@ defmodule Evolution.GameChannel do
   def handle_in("games:list", payload, socket) do
     user = current_resource(socket)
     page = user_games(user, payload)
-    {:reply, {:ok, %{games: page.entries, total_pages: page.total_pages}}, socket}
+    {:reply, {:ok, %{games: page.entries, total_pages: page.total_pages, page: page.page_number}}, socket}
   end
 
   def user_games(user, %{"page" => page}) do

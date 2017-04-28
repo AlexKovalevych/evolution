@@ -19,6 +19,7 @@ type alias Model =
     , login : LoginModel
     , signup : SignupModel
     , phxSocket : Maybe (Phoenix.Socket.Socket Msg)
+    , channels : List String
     , selectedTab : Maybe Int
     , games : GameModel
     }

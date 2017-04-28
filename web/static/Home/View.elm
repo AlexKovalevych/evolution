@@ -101,7 +101,7 @@ pagination model fromIndex totalPages currentPage =
                 else
                     [ Button.plain
                     , Button.ripple
-                    , Options.onClick <| Messages.Game <| SetPage i
+                    , Options.onClick <| Messages.Game <| SetPage True i
                     ]
             )
 

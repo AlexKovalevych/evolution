@@ -20,4 +20,5 @@ type Msg
     | LogoutRequest
     | LogoutResponse (Result Http.Error String)
     | PhoenixMsg (Phoenix.Socket.Msg Msg)
+    | JoinChannel String
     | NoOp

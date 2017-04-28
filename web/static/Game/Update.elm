@@ -39,6 +39,7 @@ update msg model =
                                 { gamesModel
                                     | games = gamesResponse.games
                                     , totalPages = gamesResponse.total_pages
+                                    , page = gamesResponse.page
                                 }
                         }
                             ! []
@@ -71,36 +72,47 @@ update msg model =
                         in
                             { model | phxSocket = Just socket_ } ! [ Cmd.map PhoenixMsg cmd ]
 
-            SetPage page ->
+            SetPage andLoad page ->
                 let
                     newModel =
                         { model | games = { gamesModel | page = page } }
                 in
-                    loadGames newModel
+                    if andLoad then
+                        loadGames newModel
+                    else
+                        newModel ! []
+
+            ReloadPage ->
+                case model.route of
+                    Routes.Home ->
+                        loadGames model
+
+                    _ ->
+                        model ! []
 
 
 joinGamesChannel : Model -> ( Model, Cmd Msg )
 joinGamesChannel model =
-    case model.phxSocket of
-        Nothing ->
-            model ! []
+    let
+        _ =
+            Debug.log "join channel" ""
+    in
+        case model.phxSocket of
+            Nothing ->
+                model ! []
 
-        Just socket ->
-            let
-                payload =
-                    (JE.object [ ( "page", JE.int model.games.page ) ])
+            Just socket ->
+                let
+                    channel =
+                        Phoenix.Channel.init gamesChannel
+                            |> Phoenix.Channel.onJoin (\_ -> JoinChannel gamesChannel)
 
-                channel =
-                    Phoenix.Channel.init gamesChannel
-                        |> Phoenix.Channel.withPayload payload
-                        |> Phoenix.Channel.onJoin (\v -> Game <| LoadGames v)
-
-                -- |> Phoenix.Channel.onClose (always (ShowLeftMessage "rooms:lobby"))
-                ( phxSocket, phxCmd ) =
-                    Phoenix.Socket.join channel socket
-            in
-                { model | phxSocket = Just phxSocket }
-                    ! [ Cmd.map PhoenixMsg phxCmd ]
+                    -- |> Phoenix.Channel.onClose (always (ShowLeftMessage "rooms:lobby"))
+                    ( phxSocket, phxCmd ) =
+                        Phoenix.Socket.join channel socket
+                in
+                    { model | phxSocket = Just phxSocket }
+                        ! [ Cmd.map PhoenixMsg phxCmd ]
 
 
 loadGames : Model -> ( Model, Cmd Msg )
@@ -110,20 +122,23 @@ loadGames model =
             model ! []
 
         Just socket ->
-            let
-                payload =
-                    (JE.object [ ( "page", JE.int model.games.page ) ])
+            if List.member gamesChannel model.channels then
+                let
+                    payload =
+                        (JE.object [ ( "page", JE.int model.games.page ) ])
 
-                channel =
-                    Phoenix.Push.init "games:list" gamesChannel
-                        |> Phoenix.Push.withPayload payload
-                        |> Phoenix.Push.onOk (\v -> Game <| LoadGames v)
+                    channel =
+                        Phoenix.Push.init "games:list" gamesChannel
+                            |> Phoenix.Push.withPayload payload
+                            |> Phoenix.Push.onOk (\v -> Game <| LoadGames v)
 
-                ( phxSocket, phxCmd ) =
-                    Phoenix.Socket.push channel socket
-            in
-                { model | phxSocket = Just phxSocket }
-                    ! [ Cmd.map PhoenixMsg phxCmd ]
+                    ( phxSocket, phxCmd ) =
+                        Phoenix.Socket.push channel socket
+                in
+                    { model | phxSocket = Just phxSocket }
+                        ! [ Cmd.map PhoenixMsg phxCmd ]
+            else
+                model ! []
 
 
 

@@ -31,14 +31,16 @@ type alias Game =
 type alias GameResponse =
     { total_pages : Int
     , games : List Game
+    , page : Int
     }
 
 
 decodeGamesResponse : JD.Decoder GameResponse
 decodeGamesResponse =
-    JD.map2 GameResponse
+    JD.map3 GameResponse
         (JD.field "total_pages" JD.int)
         (JD.field "games" <| JD.list decodeGame)
+        (JD.field "page" JD.int)
 
 
 decodeGame : JD.Decoder Game

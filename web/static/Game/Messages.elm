@@ -6,5 +6,6 @@ import Json.Encode as JE
 type GameMsg
     = SetPlayers Int
     | CreateGame
-    | SetPage Int
+    | SetPage Bool Int
+    | ReloadPage
     | LoadGames JE.Value
