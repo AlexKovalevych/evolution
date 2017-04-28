@@ -12,6 +12,7 @@ import Signup.View as SignupView
 import NotFound.View as NotFoundView
 import Game.View as GameView
 import Material.Color as Color
+import Tabs exposing (..)
 
 
 view : Model -> Html Msg
@@ -19,7 +20,15 @@ view model =
     let
         properties =
             [ Layout.fixedHeader
-            , Layout.onSelectTab SelectTab
+            , Layout.onSelectTab
+                (\k ->
+                    case tabToRoute k of
+                        Nothing ->
+                            NoOp
+
+                        Just route ->
+                            ChangePage route
+                )
             ]
                 ++ (selectTabProperty model)
     in

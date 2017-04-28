@@ -11,11 +11,7 @@ import Game.Model exposing (decodeGamesResponse, decodeGame)
 import Phoenix.Socket
 import Phoenix.Push
 import Routes exposing (GameRoute(..))
-
-
-gamesChannel : String
-gamesChannel =
-    "games:list"
+import Socket exposing (gamesChannel)
 
 
 update : GameMsg -> Model -> ( Model, Cmd Msg )

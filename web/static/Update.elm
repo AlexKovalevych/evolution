@@ -8,8 +8,13 @@ import Material
 import Login.Update as LoginUpdate
 import Signup.Update as SignupUpdate
 import Game.Update as GameUpdate
+import Game.Messages exposing (GameMsg(..))
 import Phoenix.Socket
 import Tabs exposing (..)
+import Socket exposing (gamesChannel)
+import Json.Encode as JE
+import Phoenix.Push
+import Phoenix.Socket
 
 
 update : Msg -> Model -> ( Model, Cmd Msg )
@@ -44,8 +49,37 @@ update msg model =
             { model | route = NotFound } ! []
 
         ChangePage route ->
-            -- if route is games list - need to load games according to current page
-            { model | route = route, selectedTab = routeToTab route } ! []
+            let
+                _ =
+                    Debug.log "change route" route
+
+                newModel =
+                    { model | route = route, selectedTab = routeToTab route }
+            in
+                case route of
+                    Home ->
+                        case model.phxSocket of
+                            Nothing ->
+                                newModel ! []
+
+                            Just socket ->
+                                let
+                                    payload =
+                                        (JE.object [ ( "page", JE.int model.games.page ) ])
+
+                                    channel =
+                                        Phoenix.Push.init "games:list" gamesChannel
+                                            |> Phoenix.Push.withPayload payload
+                                            |> Phoenix.Push.onOk (\v -> Game <| LoadGames v)
+
+                                    ( phxSocket, phxCmd ) =
+                                        Phoenix.Socket.push channel socket
+                                in
+                                    { newModel | phxSocket = Just phxSocket }
+                                        ! [ Cmd.map PhoenixMsg phxCmd ]
+
+                    _ ->
+                        newModel ! []
 
         Messages.Login loginMsg ->
             LoginUpdate.update loginMsg model

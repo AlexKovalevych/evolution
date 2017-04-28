@@ -5,6 +5,11 @@ import Phoenix.Socket
 import Messages exposing (Msg(..))
 
 
+gamesChannel : String
+gamesChannel =
+    "games:list"
+
+
 initSocket : String -> Maybe (Phoenix.Socket.Socket Msg)
 initSocket token =
     if token == "" then

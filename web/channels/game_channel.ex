@@ -6,14 +6,9 @@ defmodule Evolution.GameChannel do
   import Ecto.Query
   import Ecto.Query.API, only: [fragment: 1]
 
-  def join("games:list", %{"page" => page}, socket) do
+  def join("games:list" = topic, payload, socket) do
     user = current_resource(socket)
-    page = Evolution.Game
-    |> join(:left, [g], ug in fragment("SELECT * FROM user_games AS ug WHERE ug.user = ?", ^user.id))
-    |> order_by(desc: :inserted_at)
-    |> Repo.paginate(page: page)
-
-    # get user games for page
+    page = user_games(user, payload)
     {:ok, %{games: page.entries, total_pages: page.total_pages}, socket}
   end
 
@@ -28,5 +23,18 @@ defmodule Evolution.GameChannel do
     |> Repo.insert!
     # broadcast(socket, "new:game", %{game: game})
     {:reply, {:ok, game}, socket}
+  end
+
+  def handle_in("games:list", payload, socket) do
+    user = current_resource(socket)
+    page = user_games(user, payload)
+    {:reply, {:ok, %{games: page.entries, total_pages: page.total_pages}}, socket}
+  end
+
+  def user_games(user, %{"page" => page}) do
+    Evolution.Game
+    |> join(:left, [g], ug in fragment("SELECT * FROM user_games AS ug WHERE ug.user = ?", ^user.id))
+    |> order_by(desc: :inserted_at)
+    |> Repo.paginate(page: page)
   end
 end
