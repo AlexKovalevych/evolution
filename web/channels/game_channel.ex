@@ -2,6 +2,7 @@ defmodule Evolution.GameChannel do
   use Phoenix.Channel
   alias Evolution.Repo
   alias Evolution.Game
+  alias Evolution.Engine.Game, as: GameEngine
   import Guardian.Phoenix.Socket
   import Ecto.Query
   import Ecto.Query.API, only: [fragment: 1]
@@ -17,8 +18,9 @@ defmodule Evolution.GameChannel do
   def handle_in("games:new", %{"players" => players}, socket) do
     user = current_resource(socket)
     game = %Game{}
-    |> Game.changeset(%{players_number: players})
+    |> Game.changeset(%{players_number: players, creator_id: user.id})
     |> Repo.insert!
+    GameEngine.start_link(game)
     # broadcast(socket, "new:game", %{game: game})
     {:reply, {:ok, game}, socket}
   end
@@ -27,6 +29,11 @@ defmodule Evolution.GameChannel do
     user = current_resource(socket)
     page = user_games(user, payload)
     {:reply, {:ok, %{games: page.entries, total_pages: page.total_pages, page: page.page_number}}, socket}
+  end
+
+  def handle_in("games:load", %{"id" => id}, socket) do
+    user = current_resource(socket)
+    {:reply, {:ok, Repo.get(Game, id)}, socket}
   end
 
   def handle_in("games:search", payload, socket) do

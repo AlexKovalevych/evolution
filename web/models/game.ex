@@ -14,11 +14,12 @@ defmodule Evolution.Game do
     # field :current_stage, :string
     field :players_number, :integer
     # belongs_to :current_turn, Evolution.CurrentTurn
+    belongs_to :creator, Evolution.User
 
     timestamps()
   end
 
-  @required_fields ~w(completed players_number)a
+  @required_fields ~w(completed players_number creator_id)a
 
   @doc """
   Builds a changeset based on the `struct` and `params`.

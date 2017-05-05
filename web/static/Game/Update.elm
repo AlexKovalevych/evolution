@@ -44,6 +44,22 @@ update msg model =
                         }
                             ! []
 
+            LoadGame value ->
+                case JD.decodeValue decodeGame value of
+                    Err reason ->
+                        let
+                            _ =
+                                Debug.log "reason" reason
+                        in
+                            model ! []
+
+                    Ok game ->
+                        { model
+                            | games =
+                                { gamesModel | openedGame = Just game }
+                        }
+                            ! []
+
             CreateGame ->
                 case model.phxSocket of
                     Nothing ->
@@ -142,6 +158,39 @@ loadGames model =
                         ! [ Cmd.map PhoenixMsg phxCmd ]
             else
                 model ! []
+
+
+loadGame : Int -> Model -> ( Model, Cmd Msg )
+loadGame id model =
+    let
+        gameModel =
+            model.games
+
+        newGameModel =
+            { gameModel | openedGame = Nothing }
+    in
+        case model.phxSocket of
+            Nothing ->
+                { model | games = newGameModel } ! []
+
+            Just socket ->
+                if List.member GamesChannel model.channels then
+                    let
+                        payload =
+                            (JE.object [ ( "id", JE.int id ) ])
+
+                        channel =
+                            Phoenix.Push.init "games:load" gamesChannel
+                                |> Phoenix.Push.withPayload payload
+                                |> Phoenix.Push.onOk (\v -> Game <| LoadGame v)
+
+                        ( phxSocket, phxCmd ) =
+                            Phoenix.Socket.push channel socket
+                    in
+                        { model | phxSocket = Just phxSocket, games = newGameModel }
+                            ! [ Cmd.map PhoenixMsg phxCmd ]
+                else
+                    { model | games = newGameModel } ! []
 
 
 searchGames : Model -> ( Model, Cmd Msg )

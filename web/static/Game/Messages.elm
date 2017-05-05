@@ -9,4 +9,5 @@ type GameMsg
     | SetPage Bool Int
     | ReloadPage
     | LoadGames JE.Value
+    | LoadGame JE.Value
     | SearchGames

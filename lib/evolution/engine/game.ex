@@ -2,15 +2,17 @@ defmodule Evolution.Engine.Game do
   use GenServer
   alias Evolution.Engine.Deck
   alias Evolution.Engine.Player
+  alias Evolution.Engine.Rules
 
-  defstruct deck: nil, players: %{}, turn_order: [], started: false
+  defstruct deck: nil, players: %{}, turn_order: [], started: false, fsm: nil
 
-  def start_link do
-    GenServer.start_link(__MODULE__, %{})
+  def start_link(game) do
+    GenServer.start_link(__MODULE__, %{}, name: {:global, "game:#{game.id}"})
   end
 
   def init(state) do
-    {:ok, %__MODULE__{deck: Deck.new}}
+    {:ok, fsm} = Rules.start_link
+    {:ok, %__MODULE__{deck: Deck.new, fsm: fsm}}
   end
 
   def add_player(pid, user) do

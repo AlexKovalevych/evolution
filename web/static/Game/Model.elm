@@ -11,6 +11,7 @@ model =
     , newGamePlayers = 2
     , searchPlayers = 2
     , foundGames = []
+    , openedGame = Nothing
     }
 
 
@@ -21,6 +22,7 @@ type alias GameModel =
     , newGamePlayers : Int
     , searchPlayers : Int
     , foundGames : List Game
+    , openedGame : Maybe Game
     }
 
 

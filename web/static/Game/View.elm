@@ -55,5 +55,8 @@ view model =
                     ]
                 ]
 
+        Games (ViewGame id) ->
+            div [] []
+
         _ ->
             div [] []

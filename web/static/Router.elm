@@ -68,7 +68,7 @@ matchers =
     , static Routes.Signup "/signup"
     , static (Routes.Games Routes.GameList) "/games"
     , static (Routes.Games Routes.NewGame) "/games/new"
-    , dyn1 (Routes.Games << Routes.ViewGame) "/games/view" int ""
+    , dyn1 (Routes.Games << Routes.ViewGame) "/games/view/" int ""
     ]
 
 

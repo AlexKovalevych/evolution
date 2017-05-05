@@ -47,8 +47,11 @@ update msg model =
                             Games GameList ->
                                 GameUpdate.searchGames newModel
 
+                            Games (ViewGame id) ->
+                                GameUpdate.loadGame id newModel
+
                             _ ->
-                                model ! []
+                                newModel ! []
 
         Mdl msg_ ->
             Material.update Mdl msg_ model
@@ -75,6 +78,9 @@ update msg model =
                 case route of
                     Home ->
                         GameUpdate.loadGames newModel
+
+                    Games (ViewGame id) ->
+                        GameUpdate.loadGame id newModel
 
                     Games GameList ->
                         GameUpdate.searchGames newModel
