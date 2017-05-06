@@ -7,7 +7,7 @@ import Json.Decode as JD
 import Phoenix.Socket
 import Phoenix.Channel
 import Game.Messages exposing (GameMsg(..))
-import Game.Model exposing (decodeGamesResponse, decodeGame)
+import Game.Model exposing (decodeGamesResponse, decodeGameState, decodeGame)
 import Phoenix.Socket
 import Phoenix.Push
 import Routes exposing (GameRoute(..))
@@ -45,7 +45,7 @@ update msg model =
                             ! []
 
             LoadGame value ->
-                case JD.decodeValue decodeGame value of
+                case JD.decodeValue decodeGameState value of
                     Err reason ->
                         let
                             _ =
@@ -75,12 +75,16 @@ update msg model =
                                     |> Phoenix.Push.withPayload payload
                                     |> Phoenix.Push.onOk
                                         (\value ->
-                                            case JD.decodeValue decodeGame value of
-                                                Err _ ->
-                                                    NoOp
+                                            case JD.decodeValue decodeGameState value of
+                                                Err err ->
+                                                    let
+                                                        _ =
+                                                            Debug.log "Error" err
+                                                    in
+                                                        NoOp
 
-                                                Ok game ->
-                                                    ChangePage <| Routes.Games <| ViewGame game.id
+                                                Ok gameState ->
+                                                    ChangePage <| Routes.Games <| ViewGame gameState.game.id
                                         )
 
                             ( socket_, cmd ) =

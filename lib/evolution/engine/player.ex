@@ -7,6 +7,8 @@ defmodule Evolution.Engine.Player do
 
   defstruct id: nil, user: nil, animals: [], cards: []
 
+  @derive {Poison.Encoder, only: [:user, :animals]}
+
   def add_cards(%__MODULE__{cards: cards} = player, new_cards) do
     %__MODULE__{cards: cards ++ new_cards}
   end

@@ -4,15 +4,15 @@ defmodule Evolution.Engine.Game do
   alias Evolution.Engine.Player
   alias Evolution.Engine.Rules
 
-  defstruct deck: nil, players: %{}, turn_order: [], started: false, fsm: nil
+  defstruct game: nil, deck: nil, players: %{}, turn_order: [], started: false, fsm: nil
 
   def start_link(game) do
-    GenServer.start_link(__MODULE__, %{}, name: {:global, "game:#{game.id}"})
+    GenServer.start_link(__MODULE__, game, name: {:global, "game:#{game.id}"})
   end
 
-  def init(state) do
-    {:ok, fsm} = Rules.start_link
-    {:ok, %__MODULE__{deck: Deck.new, fsm: fsm}}
+  def init(game) do
+    {:ok, fsm} = Rules.start_link(game)
+    {:ok, %__MODULE__{deck: Deck.new, fsm: fsm, game: game}}
   end
 
   def add_player(pid, user) do
@@ -21,6 +21,10 @@ defmodule Evolution.Engine.Game do
 
   def start_game(pid) do
     GenServer.call(pid, :start_game)
+  end
+
+  def get_state(pid) do
+    GenServer.call(pid, :get_state)
   end
 
   @doc """
@@ -65,6 +69,14 @@ defmodule Evolution.Engine.Game do
 
   def handle_call({:add_player, _}, _from, %__MODULE__{started: true} = state) do
     {:reply, state, state}
+  end
+
+  def handle_call(:get_state, _from, state) do
+    {:reply, %{
+        players: Map.values(state.players),
+        state: Rules.show_current_state(state.fsm),
+        game: state.game
+     }, state}
   end
 
   @doc """

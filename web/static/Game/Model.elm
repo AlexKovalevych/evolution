@@ -1,6 +1,7 @@
 module Game.Model exposing (..)
 
 import Json.Decode as JD
+import Models.User exposing (User, userDecoder)
 
 
 model : GameModel
@@ -22,7 +23,7 @@ type alias GameModel =
     , newGamePlayers : Int
     , searchPlayers : Int
     , foundGames : List Game
-    , openedGame : Maybe Game
+    , openedGame : Maybe GameState
     }
 
 
@@ -34,10 +35,22 @@ type alias Game =
     }
 
 
+type alias Player =
+    { user : User
+    }
+
+
 type alias GameResponse =
     { total_pages : Int
     , games : List Game
     , page : Int
+    }
+
+
+type alias GameState =
+    { players : List Player
+    , state : String
+    , game : Game
     }
 
 
@@ -49,6 +62,14 @@ decodeGamesResponse =
         (JD.field "page" JD.int)
 
 
+decodeGameState : JD.Decoder GameState
+decodeGameState =
+    JD.map3 GameState
+        (JD.field "players" <| JD.list decodePlayer)
+        (JD.field "state" JD.string)
+        (JD.field "game" decodeGame)
+
+
 decodeGame : JD.Decoder Game
 decodeGame =
     JD.map4 Game
@@ -56,3 +77,9 @@ decodeGame =
         (JD.field "players_number" JD.int)
         (JD.field "inserted_at" JD.string)
         (JD.field "updated_at" JD.string)
+
+
+decodePlayer : JD.Decoder Player
+decodePlayer =
+    JD.map Player
+        (JD.field "user" userDecoder)

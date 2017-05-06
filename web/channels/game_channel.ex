@@ -20,9 +20,11 @@ defmodule Evolution.GameChannel do
     game = %Game{}
     |> Game.changeset(%{players_number: players, creator_id: user.id})
     |> Repo.insert!
-    GameEngine.start_link(game)
+    {:ok, pid} = GameEngine.start_link(game)
+    GameEngine.add_player(pid, user)
+    state = GameEngine.get_state(pid)
     # broadcast(socket, "new:game", %{game: game})
-    {:reply, {:ok, game}, socket}
+    {:reply, {:ok, state}, socket}
   end
 
   def handle_in("games:list", payload, socket) do
@@ -33,7 +35,8 @@ defmodule Evolution.GameChannel do
 
   def handle_in("games:load", %{"id" => id}, socket) do
     user = current_resource(socket)
-    {:reply, {:ok, Repo.get(Game, id)}, socket}
+    state = GameEngine.get_state({:global, "game:#{id}"})
+    {:reply, {:ok, state}, socket}
   end
 
   def handle_in("games:search", payload, socket) do
