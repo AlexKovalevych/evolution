@@ -50,16 +50,18 @@ defmodule Evolution.Engine.Deck do
   :red из кормовой базы, другое существо получает :red вне очереди
   """
 
+  alias Evolution.Game
+
   @cards [
     {:big, :fat},
     {:burrow, :fat},
-    :mimicry,
+    {:mimicry},
     {:big, :predator},
     {:hibernation, :predator},
-    :symbiosis,
-    :carrioner,
-    :piracy,
-    :tail_casting,
+    {:symbiosis},
+    {:carrioner},
+    {:piracy},
+    {:tail_casting},
     {:camouflage, :fat},
     {:parasite, :fat},
     {:parasite, :predator},
@@ -90,5 +92,30 @@ defmodule Evolution.Engine.Deck do
   def take_cards(%__MODULE__{pack: pack} = deck, number) when is_integer(number) do
     {cards, tail} = Enum.split(pack, number)
     {cards, %{deck | pack: tail}}
+  end
+
+  def load(%Game{deck: deck, discard_pile: discard_pile}) do
+    %__MODULE__{
+      pack: Enum.map(deck, &from_string/1),
+      discard_pile: Enum.map(discard_pile, &from_string/1),
+    }
+  end
+
+  def save(%__MODULE__{pack: pack, discard_pile: discard_pile} = deck) do
+    %{deck: Enum.map(pack, &to_string/1), discard_pile: Enum.map(discard_pile, &to_string/1)}
+  end
+
+  def from_string(card) when is_bitstring(card) do
+    card
+    |> String.split("_")
+    |> Enum.map(&String.to_atom/1)
+    |> List.to_tuple
+  end
+
+  def to_string(card) when is_tuple(card) do
+    card
+    |> Tuple.to_list
+    |> Enum.map(&to_string/1)
+    |> Enum.join("_")
   end
 end

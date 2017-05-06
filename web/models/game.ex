@@ -11,15 +11,21 @@ defmodule Evolution.Game do
 
   schema "games" do
     field :completed, :boolean, default: false
-    # field :current_stage, :string
     field :players_number, :integer
-    # belongs_to :current_turn, Evolution.CurrentTurn
+    field :deck, {:array, :string}, default: []
+    field :discard_pile, {:array, :string}, default: []
+    field :turn_order, {:array, :integer}
+    field :fsm_state, :string
     belongs_to :creator, Evolution.User
+    belongs_to :current_turn, Evolution.User
+    has_many :players, Evolution.UserGame
 
     timestamps()
   end
 
   @required_fields ~w(completed players_number creator_id)a
+
+  @optional_fields ~w(turn_order deck discard_pile current_turn_id)a
 
   @doc """
   Builds a changeset based on the `struct` and `params`.

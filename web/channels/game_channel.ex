@@ -35,7 +35,7 @@ defmodule Evolution.GameChannel do
 
   def handle_in("games:load", %{"id" => id}, socket) do
     user = current_resource(socket)
-    state = GameEngine.get_state({:global, "game:#{id}"})
+    state = GameEngine.get_state(id)
     {:reply, {:ok, state}, socket}
   end
 

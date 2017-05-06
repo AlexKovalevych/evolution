@@ -6,11 +6,20 @@ defmodule Evolution.Engine.Game do
 
   defstruct game: nil, deck: nil, players: %{}, turn_order: [], started: false, fsm: nil
 
-  def start_link(game) do
+  def start_link(%__MODULE__{game: game} = state) do
+    GenServer.start_link(__MODULE__, state, name: {:global, "game:#{game.id}"})
+  end
+
+  def start_link(%Game{} = game) do
     GenServer.start_link(__MODULE__, game, name: {:global, "game:#{game.id}"})
   end
 
-  def init(game) do
+  def init(%__MODULE__{game: game} = state) do
+    {:ok, fsm} = Rules.start_link(game)
+    {:ok, %__MODULE__{state | fsm: fsm}}
+  end
+
+  def init(%Game{} = game) do
     {:ok, fsm} = Rules.start_link(game)
     {:ok, %__MODULE__{deck: Deck.new, fsm: fsm, game: game}}
   end
@@ -23,8 +32,45 @@ defmodule Evolution.Engine.Game do
     GenServer.call(pid, :start_game)
   end
 
-  def get_state(pid) do
-    GenServer.call(pid, :get_state)
+  def get_state(id) do
+    pid = {:global, "game:#{id}"}
+    if Process.alive?(pid) do
+      GenServer.call(pid, :get_state)
+    else
+      game = Repo.get!(Evolution.Game, id)
+      {:ok, pid} = start_link()
+    end
+  end
+
+  def save(pid) do
+    GenServer.call(pid, :save)
+  end
+
+  # def load(game) do
+  #   start_link(game)
+  # end
+
+  def handle_call(:save, _from, state) do
+    %{deck: deck, discard_pile: discard_pile} = if is_nil(state.deck) do
+      %{deck: [], discard_pile: []}
+    else
+      Deck.save(state.deck)
+    end
+
+    Repo.transaction(fn ->
+      state.game
+      |> Game.changeset(
+        %{
+          turn_order: state.turn_order,
+          deck: deck,
+          discard_pile: discard_pile,
+          fsm_state: state.fsm |> Rules.show_current_state |> to_string,
+        }
+      )
+      |> Repo.update!
+
+      # update players
+    end)
   end
 
   @doc """

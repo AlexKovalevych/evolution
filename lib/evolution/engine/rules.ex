@@ -2,9 +2,11 @@ defmodule Evolution.Engine.Rules do
   @behaviour :gen_statem
 
   alias Evolution.Engine.Rules
+  alias Evolution.Game
 
-  def start_link(game) do
-    :gen_statem.start_link(__MODULE__, %{state: :initialized, game: game}, [])
+  def start_link(%Game{fsm_state: fsm_state} = game) do
+    state = if is_nil(fsm_state), do: :initialized, else: String.to_atom(fsm_state)
+    :gen_statem.start_link(__MODULE__, %{state: state, game: game}, [])
   end
 
   def init(state_data) do
