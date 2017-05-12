@@ -8,9 +8,9 @@ defmodule Evolution.Repo.Migrations.CreateUserGameAnimal do
       add :food, :integer
       add :extra_food, :integer
       add :fat, :integer
-      add :user_game, references(:user_games, on_delete: :nothing)
-      add :cooperation, references(:user_game_animals, on_delete: :nilify_all)
-      add :interaction, references(:user_game_animals, on_delete: :nilify_all)
+      add :user_game_id, references(:user_games, on_delete: :nothing)
+      add :cooperation_id, references(:user_game_animals, on_delete: :nilify_all)
+      add :interaction_id, references(:user_game_animals, on_delete: :nilify_all)
 
       timestamps()
     end

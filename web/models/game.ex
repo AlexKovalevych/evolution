@@ -14,7 +14,7 @@ defmodule Evolution.Game do
     field :players_number, :integer
     field :deck, {:array, :string}, default: []
     field :discard_pile, {:array, :string}, default: []
-    field :turn_order, {:array, :integer}
+    field :turn_order, {:array, :integer}, default: []
     field :fsm_state, :string
     belongs_to :creator, Evolution.User
     belongs_to :current_turn, Evolution.User

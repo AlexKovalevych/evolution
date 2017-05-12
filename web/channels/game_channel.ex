@@ -18,10 +18,18 @@ defmodule Evolution.GameChannel do
   def handle_in("games:new", %{"players" => players}, socket) do
     user = current_resource(socket)
     game = %Game{}
-    |> Game.changeset(%{players_number: players, creator_id: user.id})
+    |> Game.changeset(
+      %{
+        players_number: players,
+        creator_id: user.id,
+        deck: Deck.new |> Enum.map(&Card.to_str/1),
+      }
+    )
+    |> Repo.preload(:players)
     |> Repo.insert!
     {:ok, pid} = GameEngine.start_link(game)
     GameEngine.add_player(pid, user)
+    GameEngine.save(pid)
     state = GameEngine.get_state(pid)
     # broadcast(socket, "new:game", %{game: game})
     {:reply, {:ok, state}, socket}
