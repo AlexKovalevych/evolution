@@ -25,14 +25,14 @@ defmodule Evolution.Game do
 
   @required_fields ~w(completed players_number creator_id)a
 
-  @optional_fields ~w(turn_order deck discard_pile current_turn_id)a
+  @optional_fields ~w(turn_order deck discard_pile current_turn_id fsm_state)a
 
   @doc """
   Builds a changeset based on the `struct` and `params`.
   """
   def changeset(struct, params \\ %{}) do
     struct
-    |> cast(params, @required_fields)
+    |> cast(params, @required_fields ++ @optional_fields)
     |> validate_required(@required_fields)
   end
 end

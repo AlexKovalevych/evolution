@@ -19,7 +19,11 @@ defmodule Evolution.UserGame do
   """
   def changeset(struct, params \\ %{}) do
     struct
-    |> cast(params, @required_fields)
+    |> cast(params, @required_fields ++ @optional_fields)
     |> validate_required(@required_fields)
+  end
+
+  def take_cards(deck, number) do
+    Enum.split(deck, number)
   end
 end

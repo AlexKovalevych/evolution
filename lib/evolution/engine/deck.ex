@@ -81,10 +81,7 @@ defmodule Evolution.Engine.Deck do
     |> Stream.cycle()
     |> Stream.take(Enum.count(@cards) * 4)
     |> Enum.to_list
-  end
-
-  def shuffle(%Game{deck: deck}) do
-    Enum.shuffle(deck)
+    |> Enum.map(&Card.to_str/1)
   end
 
   # def take_cards(%__MODULE__{pack: pack} = deck, number) when is_integer(number) do
