@@ -1,6 +1,13 @@
 defmodule Evolution.Engine.Rules do
   @behaviour :gen_statem
 
+  @moduledoc """
+  Stage 1: Evolution
+  Stage 2: Define base
+  Stage 3: Food
+  Stage 4: Extinction
+  """
+
   alias Evolution.Engine.Deck
   alias Evolution.Game
   alias Evolution.Repo
@@ -8,7 +15,7 @@ defmodule Evolution.Engine.Rules do
   import Ecto.Query
 
   def start_link(%Game{fsm_state: fsm_state} = game) do
-    game = Repo.preload(game, :players)
+    game = Repo.preload(game, [:players, :current_turn])
     state = if is_nil(fsm_state), do: :initialized, else: String.to_atom(fsm_state)
     :gen_statem.start_link(__MODULE__, %{state: state, game: game}, [])
   end
@@ -42,6 +49,8 @@ defmodule Evolution.Engine.Rules do
 
   def initialized({:call, from}, :start, game) do
     game = Repo.transaction(fn ->
+      players = Repo.preload(game.players, :user)
+      turn_order = Enum.map(players, fn user_game -> user_game.user.id end)
       deck = Enum.reduce(game.players, Deck.new |> Enum.shuffle, fn user_game, deck ->
         {cards, deck} = UserGame.take_cards(deck, 6)
         user_game
@@ -49,17 +58,22 @@ defmodule Evolution.Engine.Rules do
         |> Repo.update!
         deck
       end)
+      first_player = players |> List.first
       game
       |> Game.changeset(
         %{
-          fsm_state: "started",
+          fsm_state: "evolution",
           deck: deck,
           discard_pile: [],
+          turn_order: turn_order,
+          stage_order: turn_order,
+          current_turn_id: first_player.user.id,
         }
       )
       |> Repo.update!
+      |> Repo.preload(:current_turn)
     end)
-    {:next_state, :started, game, {:reply, from, :ok}}
+    {:next_state, :evolution, game, {:reply, from, :ok}}
   end
 
   def initialized({:call, from}, :show_current_state, _state_data) do
@@ -70,13 +84,22 @@ defmodule Evolution.Engine.Rules do
     {:keep_state_and_data, {:reply, from, :error}}
   end
 
-  def started({:call, from}, :show_current_state, _state_data) do
-    {:keep_state_and_data, {:reply, from, :started}}
+  def evolution({:call, from}, {:put_card, user, card}, game) do
+    if user.id != game.current_turn.id do
+      {:keep_state_and_data, {:reply, from, :error}}
+    else
+    end
   end
 
-  def started({:call, from}, _, _state_data) do
+  def evolution({:call, from}, :show_current_state, _state_data) do
+    {:keep_state_and_data, {:reply, from, :evolution}}
+  end
+
+  def evolution({:call, from}, _, _state_data) do
     {:keep_state_and_data, {:reply, from, :error}}
   end
+
+  def put_card(fsm, user, card), do: :gen_statem.call(fsm, {:put_card, user, card})
 
   def add_player(fsm, user), do: :gen_statem.call(fsm, {:add_player, user})
 

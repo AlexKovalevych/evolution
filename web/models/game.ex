@@ -15,6 +15,7 @@ defmodule Evolution.Game do
     field :deck, {:array, :string}, default: []
     field :discard_pile, {:array, :string}, default: []
     field :turn_order, {:array, :integer}, default: []
+    field :stage_order, {:array, :integer}, default: []
     field :fsm_state, :string
     belongs_to :creator, Evolution.User
     belongs_to :current_turn, Evolution.User
@@ -25,7 +26,7 @@ defmodule Evolution.Game do
 
   @required_fields ~w(completed players_number creator_id)a
 
-  @optional_fields ~w(turn_order deck discard_pile current_turn_id fsm_state)a
+  @optional_fields ~w(turn_order stage_order deck discard_pile current_turn_id fsm_state)a
 
   @doc """
   Builds a changeset based on the `struct` and `params`.
