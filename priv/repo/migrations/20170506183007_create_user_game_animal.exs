@@ -15,6 +15,6 @@ defmodule Evolution.Repo.Migrations.CreateUserGameAnimal do
       timestamps()
     end
 
-    create index(:user_game_animals, [:user_game])
+    create index(:user_game_animals, [:user_game_id])
   end
 end

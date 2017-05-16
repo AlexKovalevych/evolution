@@ -2,7 +2,7 @@ defmodule Evolution.GameChannel do
   use Phoenix.Channel
   alias Evolution.Repo
   alias Evolution.Game
-  alias Evolution.Engine.Game, as: GameEngine
+  alias Evolution.Engine.Rules, as: GameEngine
   import Guardian.Phoenix.Socket
   import Ecto.Query
   import Ecto.Query.API, only: [fragment: 1]
@@ -22,14 +22,12 @@ defmodule Evolution.GameChannel do
       %{
         players_number: players,
         creator_id: user.id,
-        deck: Deck.new |> Enum.map(&Card.to_str/1),
       }
     )
-    |> Repo.preload(:players)
     |> Repo.insert!
     {:ok, pid} = GameEngine.start_link(game)
-    GameEngine.add_player(pid, user)
-    GameEngine.save(pid)
+    # GameEngine.add_player(pid, user)
+    # GameEngine.save(pid)
     state = GameEngine.get_state(pid)
     # broadcast(socket, "new:game", %{game: game})
     {:reply, {:ok, state}, socket}
@@ -54,7 +52,7 @@ defmodule Evolution.GameChannel do
 
   def user_games(user, %{"page" => page}) do
     Evolution.Game
-    |> join(:left, [g], ug in fragment("SELECT * FROM user_games AS ug WHERE ug.user = ?", ^user.id))
+    |> join(:left, [g], ug in fragment("SELECT * FROM user_games AS ug WHERE ug.user_id = ?", ^user.id))
     |> order_by(desc: :inserted_at)
     |> Repo.paginate(page: page)
   end

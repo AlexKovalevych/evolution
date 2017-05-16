@@ -84,10 +84,34 @@ defmodule Evolution.Engine.Rules do
     {:keep_state_and_data, {:reply, from, :error}}
   end
 
-  def evolution({:call, from}, {:put_card, user, card}, game) do
-    if user.id != game.current_turn.id do
-      {:keep_state_and_data, {:reply, from, :error}}
+  def evolution({:call, from}, {:put_card, user, {index, property}}, game) do
+    player = game.players |> Enum.find(fn user_game ->
+      user_game.id == user.id
+    end)
+    card = Enum.at(player.cards, card)
+    # check if card has that property
+    with true <- user.id != game.current_turn.id,
+         true <- !is_nil(player),
+         true <- !is_nil(card) do
+      # define if user can put the card at that position
+      {:keep_state_and_data, {:reply, from, :ok}}
     else
+      false -> {:keep_state_and_data, {:reply, from, :error}}
+    end
+  end
+
+  def evolution({:call, from}, {:create_animal, user, card}, game) do
+    player = game.players |> Enum.find(fn user_game ->
+      user_game.id == user.id
+    end)
+    card = Enum.at(player.cards, card)
+    with true <- user.id != game.current_turn.id,
+         true <- !is_nil(player),
+         true <- !is_nil(card) do
+      # create new animal here
+      {:keep_state_and_data, {:reply, from, :ok}}
+    else
+      false -> {:keep_state_and_data, {:reply, from, :error}}
     end
   end
 
@@ -99,7 +123,15 @@ defmodule Evolution.Engine.Rules do
     {:keep_state_and_data, {:reply, from, :error}}
   end
 
-  def put_card(fsm, user, card), do: :gen_statem.call(fsm, {:put_card, user, card})
+  def put_card(fsm, user, card) when is_integer(card), do: :gen_statem.call(fsm, {:create_animal, user, card})
+
+  def put_card(fsm, user, {index, card}) when is_integer(index) && is_binary(card) do
+    :gen_statem.call(fsm, {:put_card, user, {index, card}})
+  end
+
+  # add support for cooperation
+
+  # add support for parasite
 
   def add_player(fsm, user), do: :gen_statem.call(fsm, {:add_player, user})
 
