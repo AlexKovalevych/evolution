@@ -12,6 +12,7 @@ defmodule Evolution.Engine.Rules do
   alias Evolution.Game
   alias Evolution.Repo
   alias Evolution.UserGame
+  alias Evolution.UserGameAnimal
   import Ecto.Query
 
   def start_link(%Game{fsm_state: fsm_state} = game) do
@@ -84,15 +85,15 @@ defmodule Evolution.Engine.Rules do
     {:keep_state_and_data, {:reply, from, :error}}
   end
 
-  def evolution({:call, from}, {:put_card, user, {index, property}}, game) do
+  def evolution({:call, from}, {:put_card, user, {from_index, property, to_index}}, game) do
     player = game.players |> Enum.find(fn user_game ->
       user_game.id == user.id
     end)
-    card = Enum.at(player.cards, card)
-    # check if card has that property
+    card = Enum.at(player.cards, from_index)
     with true <- user.id != game.current_turn.id,
          true <- !is_nil(player),
-         true <- !is_nil(card) do
+         true <- !is_nil(card),
+         true <- card |> String.split("_") |> Enum.member?(property) do
       # define if user can put the card at that position
       {:keep_state_and_data, {:reply, from, :ok}}
     else
@@ -104,11 +105,10 @@ defmodule Evolution.Engine.Rules do
     player = game.players |> Enum.find(fn user_game ->
       user_game.id == user.id
     end)
-    card = Enum.at(player.cards, card)
     with true <- user.id != game.current_turn.id,
          true <- !is_nil(player),
-         true <- !is_nil(card) do
-      # create new animal here
+         true <- !is_nil(Enum.at(player.cards, card)),
+         {:ok, animal} <- create_animal(card, game, user, player) do
       {:keep_state_and_data, {:reply, from, :ok}}
     else
       false -> {:keep_state_and_data, {:reply, from, :error}}
@@ -125,8 +125,9 @@ defmodule Evolution.Engine.Rules do
 
   def put_card(fsm, user, card) when is_integer(card), do: :gen_statem.call(fsm, {:create_animal, user, card})
 
-  def put_card(fsm, user, {index, card}) when is_integer(index) && is_binary(card) do
-    :gen_statem.call(fsm, {:put_card, user, {index, card}})
+  def put_card(fsm, user, {from_index, property, to_index})
+  when is_integer(from_index) and is_binary(property) and is_integer(to_index) do
+    :gen_statem.call(fsm, {:put_card, user, {from_index, property, to_index}})
   end
 
   # add support for cooperation
@@ -152,5 +153,32 @@ defmodule Evolution.Engine.Rules do
     |> join(:left, [g, p], u in assoc(p, :user))
     |> preload([g, p], [players: p])
     |> Repo.one
+  end
+
+  defp create_animal(card, game, user, user_game) do
+    animals = Repo.preload(user_game, :animals)
+    new_cards = List.delete_at(user_game.cards, card)
+    player_index = game.stage_order |> Enum.find_index(fn id ->
+      id == user.id
+    end)
+    next_turn_id = Enum.at(game.stage_order, List.first(game.stage_order), player_index + 1)
+    Repo.transaction(fn ->
+      game
+      |> Game.changeset(
+        %{
+          current_turn_id: next_turn_id
+        }
+      )
+      |> Repo.update!
+
+      %UserGameAnimal{}
+      |> UserGameAnimal.changeset(
+        %{
+          card: Enum.count(animals),
+          user_game_id: user_game.id,
+        }
+      )
+      |> Repo.insert
+    end)
   end
 end
