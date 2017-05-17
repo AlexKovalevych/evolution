@@ -87,7 +87,7 @@ defmodule Evolution.Engine.Rules do
 
   def evolution({:call, from}, {:put_card, user, {from_index, property, to_index}}, game) do
     player = game.players |> Enum.find(fn user_game ->
-      user_game.id == user.id
+      user_game.user_id == user.id
     end)
     card = Enum.at(player.cards, from_index)
     with true <- user.id != game.current_turn.id,
@@ -103,15 +103,16 @@ defmodule Evolution.Engine.Rules do
 
   def evolution({:call, from}, {:create_animal, user, card}, game) do
     player = game.players |> Enum.find(fn user_game ->
-      user_game.id == user.id
+      user_game.user_id == user.id
     end)
-    with true <- user.id != game.current_turn.id,
-         true <- !is_nil(player),
-         true <- !is_nil(Enum.at(player.cards, card)),
-         {:ok, animal} <- create_animal(card, game, user, player) do
-      {:keep_state_and_data, {:reply, from, :ok}}
+    with {true, _} <- {user.id == game.current_turn.id, "not your turn"},
+         {true, _} <- {!is_nil(player), "invalid user id"},
+         {true, _} <- {!is_nil(Enum.at(player.cards, card)), "no such card"},
+         {:ok, game} <- create_animal(card, game, user, player) do
+      {:keep_state, game, {:reply, from, game}}
     else
-      false -> {:keep_state_and_data, {:reply, from, :error}}
+      {false, reason} -> {:keep_state_and_data, {:reply, from, reason}}
+      {:error, _} -> {:keep_state_and_data, {:reply, from, :error}}
     end
   end
 
@@ -156,29 +157,28 @@ defmodule Evolution.Engine.Rules do
   end
 
   defp create_animal(card, game, user, user_game) do
-    animals = Repo.preload(user_game, :animals)
-    new_cards = List.delete_at(user_game.cards, card)
+    user_game = Repo.preload(user_game, :animals)
     player_index = game.stage_order |> Enum.find_index(fn id ->
       id == user.id
     end)
-    next_turn_id = Enum.at(game.stage_order, List.first(game.stage_order), player_index + 1)
+    next_turn_id = Enum.at(game.stage_order, player_index + 1, List.first(game.stage_order))
     Repo.transaction(fn ->
-      game
-      |> Game.changeset(
-        %{
-          current_turn_id: next_turn_id
-        }
-      )
+      user_game
+      |> UserGame.changeset(%{cards: List.delete_at(user_game.cards, card)})
       |> Repo.update!
 
       %UserGameAnimal{}
       |> UserGameAnimal.changeset(
         %{
-          card: Enum.count(animals),
+          card: user_game.animals |> Enum.count |> to_string,
           user_game_id: user_game.id,
         }
       )
-      |> Repo.insert
+      |> Repo.insert!
+
+      game
+      |> Game.changeset(%{current_turn_id: next_turn_id})
+      |> Repo.update!
     end)
   end
 end
