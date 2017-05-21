@@ -14,6 +14,7 @@ defmodule Evolution.Engine.Rules do
   alias Evolution.UserGame
   alias Evolution.UserGameAnimal
   import Ecto.Query
+  require Logger
 
   def start_link(%Game{fsm_state: fsm_state} = game) do
     game = Repo.preload(game, [:players, :current_turn])
@@ -49,32 +50,42 @@ defmodule Evolution.Engine.Rules do
   end
 
   def initialized({:call, from}, :start, game) do
-    game = Repo.transaction(fn ->
-      players = Repo.preload(game.players, :user)
-      turn_order = Enum.map(players, fn user_game -> user_game.user.id end)
-      deck = Enum.reduce(game.players, Deck.new |> Enum.shuffle, fn user_game, deck ->
-        {cards, deck} = UserGame.take_cards(deck, 6)
-        user_game
-        |> UserGame.changeset(%{cards: cards})
+    if Enum.count(game.players) == game.players_number do
+      transaction = Repo.transaction(fn ->
+        players = Repo.preload(game.players, :user)
+        turn_order = Enum.map(players, fn user_game -> user_game.user.id end)
+        deck = Enum.reduce(game.players, Deck.new |> Enum.shuffle, fn user_game, deck ->
+          {cards, deck} = UserGame.take_cards(deck, 6)
+          user_game
+          |> UserGame.changeset(%{cards: cards})
+          |> Repo.update!
+          deck
+        end)
+        first_player = players |> List.first
+        game
+        |> Game.changeset(
+          %{
+            fsm_state: "evolution",
+            deck: deck,
+            discard_pile: [],
+            turn_order: turn_order,
+            stage_order: turn_order,
+            current_turn_id: first_player.user.id,
+          }
+        )
         |> Repo.update!
-        deck
+        |> Repo.preload(:current_turn)
       end)
-      first_player = players |> List.first
-      game
-      |> Game.changeset(
-        %{
-          fsm_state: "evolution",
-          deck: deck,
-          discard_pile: [],
-          turn_order: turn_order,
-          stage_order: turn_order,
-          current_turn_id: first_player.user.id,
-        }
-      )
-      |> Repo.update!
-      |> Repo.preload(:current_turn)
-    end)
-    {:next_state, :evolution, game, {:reply, from, :ok}}
+      case transaction do
+        {:ok, game} ->
+          {:next_state, :evolution, game, {:reply, from, :ok}}
+        {:error, value} ->
+          Logger.error(value)
+          {:keep_state_and_data, {:reply, from, :error}}
+      end
+    else
+      {:keep_state_and_data, {:reply, from, :error}}
+    end
   end
 
   def initialized({:call, from}, :show_current_state, _state_data) do
@@ -101,6 +112,8 @@ defmodule Evolution.Engine.Rules do
     end
   end
 
+  def evolution({:call, from}, {:put_card, user, _}, game), do: {:keep_state_and_data, {:reply, from, :error}}
+
   def evolution({:call, from}, {:create_animal, user, card}, game) do
     player = game.players |> Enum.find(fn user_game ->
       user_game.user_id == user.id
@@ -108,7 +121,8 @@ defmodule Evolution.Engine.Rules do
     with {true, _} <- {user.id == game.current_turn.id, "not your turn"},
          {true, _} <- {!is_nil(player), "invalid user id"},
          {true, _} <- {!is_nil(Enum.at(player.cards, card)), "no such card"},
-         {:ok, game} <- create_animal(card, game, user, player) do
+         {:ok, game} <- create_animal(card, game, user, player),
+         game <- refresh_game(game) do
       {:keep_state, game, {:reply, from, game}}
     else
       {false, reason} -> {:keep_state_and_data, {:reply, from, reason}}
@@ -130,6 +144,8 @@ defmodule Evolution.Engine.Rules do
   when is_integer(from_index) and is_binary(property) and is_integer(to_index) do
     :gen_statem.call(fsm, {:put_card, user, {from_index, property, to_index}})
   end
+
+  def put_card(fsm, user, properties), do: :gen_statem.call(fsm, {:put_card, user, properties})
 
   # add support for cooperation
 
@@ -153,6 +169,7 @@ defmodule Evolution.Engine.Rules do
     |> join(:left, [g], p in assoc(g, :players))
     |> join(:left, [g, p], u in assoc(p, :user))
     |> preload([g, p], [players: p])
+    |> preload([g, p], [:current_turn])
     |> Repo.one
   end
 

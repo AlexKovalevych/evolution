@@ -3,6 +3,7 @@ defmodule Evolution.UserGame do
 
   schema "user_games" do
     field :cards, {:array, :string}, default: []
+    field :finish_stage, default: false
     belongs_to :user, Evolution.User
     belongs_to :game, Evolution.Game
     has_many :animals, Evolution.UserGameAnimal
@@ -12,7 +13,7 @@ defmodule Evolution.UserGame do
 
   @required_fields ~w(user_id game_id)a
 
-  @optional_fields ~w(cards)a
+  @optional_fields ~w(cards finish_stage)a
 
   @doc """
   Builds a changeset based on the `struct` and `params`.
