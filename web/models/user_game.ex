@@ -3,7 +3,7 @@ defmodule Evolution.UserGame do
 
   schema "user_games" do
     field :cards, {:array, :string}, default: []
-    field :finish_stage, default: false
+    field :finish_stage, :boolean, default: false
     belongs_to :user, Evolution.User
     belongs_to :game, Evolution.Game
     has_many :animals, Evolution.UserGameAnimal

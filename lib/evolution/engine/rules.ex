@@ -13,11 +13,13 @@ defmodule Evolution.Engine.Rules do
   alias Evolution.Repo
   alias Evolution.UserGame
   alias Evolution.UserGameAnimal
+  alias Evolution.Engine.Player
+  import Evolution.Engine.Stage.Evolution, only: [create_animal: 4]
   import Ecto.Query
   require Logger
 
   def start_link(%Game{fsm_state: fsm_state} = game) do
-    game = Repo.preload(game, [:players, :current_turn])
+    game = Game.refresh_game(game)
     state = if is_nil(fsm_state), do: :initialized, else: String.to_atom(fsm_state)
     :gen_statem.start_link(__MODULE__, %{state: state, game: game}, [])
   end
@@ -44,7 +46,7 @@ defmodule Evolution.Engine.Rules do
         }
       )
       |> Repo.insert!
-      game = refresh_game(game)
+      game = Game.refresh_game(game)
       {:keep_state, game, {:reply, from, game}}
     end
   end
@@ -74,10 +76,10 @@ defmodule Evolution.Engine.Rules do
           }
         )
         |> Repo.update!
-        |> Repo.preload(:current_turn)
       end)
       case transaction do
         {:ok, game} ->
+          game = Game.refresh_game(game)
           {:next_state, :evolution, game, {:reply, from, :ok}}
         {:error, value} ->
           Logger.error(value)
@@ -115,18 +117,14 @@ defmodule Evolution.Engine.Rules do
   def evolution({:call, from}, {:put_card, user, _}, game), do: {:keep_state_and_data, {:reply, from, :error}}
 
   def evolution({:call, from}, {:create_animal, user, card}, game) do
-    player = game.players |> Enum.find(fn user_game ->
-      user_game.user_id == user.id
-    end)
-    with {true, _} <- {user.id == game.current_turn.id, "not your turn"},
-         {true, _} <- {!is_nil(player), "invalid user id"},
+    with {true, player} <- Player.check_turn(game, user),
          {true, _} <- {!is_nil(Enum.at(player.cards, card)), "no such card"},
          {:ok, game} <- create_animal(card, game, user, player),
-         game <- refresh_game(game) do
+         game <- Game.refresh_game(game) do
       {:keep_state, game, {:reply, from, game}}
     else
       {false, reason} -> {:keep_state_and_data, {:reply, from, reason}}
-      {:error, _} -> {:keep_state_and_data, {:reply, from, :error}}
+      {:error, reason} -> {:keep_state_and_data, {:reply, from, {:error, reason}}}
     end
   end
 
@@ -134,28 +132,23 @@ defmodule Evolution.Engine.Rules do
     {:keep_state_and_data, {:reply, from, :evolution}}
   end
 
+  def evolution({:call, from}, {:finish_stage, user}, game) do
+    with {true, player} <- Player.check_turn(game, user),
+         {:ok, game} <- finish_user_stage(game, player) do
+      {:keep_state, game, {:reply, from, game}}
+    else
+      {false, reason} -> {:keep_state_and_data, {:reply, from, reason}}
+    end
+  end
+
   def evolution({:call, from}, _, _state_data) do
     {:keep_state_and_data, {:reply, from, :error}}
   end
-
-  def put_card(fsm, user, card) when is_integer(card), do: :gen_statem.call(fsm, {:create_animal, user, card})
 
   def put_card(fsm, user, {from_index, property, to_index})
   when is_integer(from_index) and is_binary(property) and is_integer(to_index) do
     :gen_statem.call(fsm, {:put_card, user, {from_index, property, to_index}})
   end
-
-  def put_card(fsm, user, properties), do: :gen_statem.call(fsm, {:put_card, user, properties})
-
-  # add support for cooperation
-
-  # add support for parasite
-
-  def add_player(fsm, user), do: :gen_statem.call(fsm, {:add_player, user})
-
-  def start_game(fsm), do: :gen_statem.call(fsm, :start)
-
-  def show_current_state(fsm), do: :gen_statem.call(fsm, :show_current_state)
 
   def callback_mode, do: :state_functions
 
@@ -163,38 +156,23 @@ defmodule Evolution.Engine.Rules do
 
   def terminate(_reason, _state, _data), do: :nothing
 
-  defp refresh_game(game) do
-    Game
-    |> where([g], g.id == ^game.id)
-    |> join(:left, [g], p in assoc(g, :players))
-    |> join(:left, [g, p], u in assoc(p, :user))
-    |> preload([g, p], [players: p])
-    |> preload([g, p], [:current_turn])
-    |> Repo.one
-  end
-
-  defp create_animal(card, game, user, user_game) do
-    user_game = Repo.preload(user_game, :animals)
+  defp finish_user_stage(game, user_game) do
     player_index = game.stage_order |> Enum.find_index(fn id ->
-      id == user.id
+      id == user_game.user.id
     end)
     next_turn_id = Enum.at(game.stage_order, player_index + 1, List.first(game.stage_order))
     Repo.transaction(fn ->
       user_game
-      |> UserGame.changeset(%{cards: List.delete_at(user_game.cards, card)})
+      |> UserGame.changeset(%{finish_stage: true})
       |> Repo.update!
 
-      %UserGameAnimal{}
-      |> UserGameAnimal.changeset(
+      game
+      |> Game.changeset(
         %{
-          card: user_game.animals |> Enum.count |> to_string,
-          user_game_id: user_game.id,
+          current_turn_id: next_turn_id,
+          stage_order: List.delete_at(game.stage_order, player_index)
         }
       )
-      |> Repo.insert!
-
-      game
-      |> Game.changeset(%{current_turn_id: next_turn_id})
       |> Repo.update!
     end)
   end

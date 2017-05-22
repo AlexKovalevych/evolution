@@ -6,6 +6,8 @@ defmodule Evolution.Game do
   """
 
   use Evolution.Web, :model
+  alias Evolution.Repo
+  import Ecto.Query
 
   @derive {Poison.Encoder, only: [:id, :completed, :players_number, :inserted_at, :updated_at]}
 
@@ -35,5 +37,15 @@ defmodule Evolution.Game do
     struct
     |> cast(params, @required_fields ++ @optional_fields)
     |> validate_required(@required_fields)
+  end
+
+  def refresh_game(game) do
+    __MODULE__
+    |> where([g], g.id == ^game.id)
+    |> join(:left, [g], p in assoc(g, :players))
+    |> join(:left, [g, p], u in assoc(p, :user))
+    |> preload([g, p, u], [players: {p, user: u}])
+    |> preload([g, p], [:current_turn])
+    |> Repo.one
   end
 end
