@@ -99,18 +99,15 @@ defmodule Evolution.Engine.Rules do
   end
 
   def evolution({:call, from}, {:put_card, user, {from_index, property, to_index}}, game) do
-    player = game.players |> Enum.find(fn user_game ->
-      user_game.user_id == user.id
-    end)
-    card = Enum.at(player.cards, from_index)
-    with true <- user.id != game.current_turn.id,
-         true <- !is_nil(player),
-         true <- !is_nil(card),
-         true <- card |> String.split("_") |> Enum.member?(property) do
+    with {true, player} <- Player.check_turn(game, user),
+         {true, _} <- {!is_nil(Enum.at(player.cards, from_index)), "no such card"},
+         {true, _} <- {!is_nil(Enum.find(player.animals, &(&1.card == to_index))), "no such animal"},
+         {true, _} <- {card |> String.split(" ") |> Enum.member?(property), "no such property"},
+         {true, _} <- Card.check_property(Enum.find(player.animals, &(&1.card == to_index)), property) do
       # define if user can put the card at that position
       {:keep_state_and_data, {:reply, from, :ok}}
     else
-      false -> {:keep_state_and_data, {:reply, from, :error}}
+      {false, reason} -> {:keep_state_and_data, {:reply, from, reason}}
     end
   end
 
@@ -143,11 +140,6 @@ defmodule Evolution.Engine.Rules do
 
   def evolution({:call, from}, _, _state_data) do
     {:keep_state_and_data, {:reply, from, :error}}
-  end
-
-  def put_card(fsm, user, {from_index, property, to_index})
-  when is_integer(from_index) and is_binary(property) and is_integer(to_index) do
-    :gen_statem.call(fsm, {:put_card, user, {from_index, property, to_index}})
   end
 
   def callback_mode, do: :state_functions

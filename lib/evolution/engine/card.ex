@@ -1,4 +1,29 @@
 defmodule Evolution.Engine.Card do
+  # @properties ~w(
+  #   big
+  #   fat
+  #   burrow
+  #   mimicry
+  #   predator
+  #   hibernation
+  #   carrioner
+  #   piracy
+  #   tail_casting
+  #   parasite
+  #   camouflage
+  #   poisonous
+  #   keen_sight
+  #   tramper
+  # )
+  # {:symbiosis},
+  # {:cooperation}
+  # {:interaction}
+
+
+  def check_property(animal, property) do
+    # check if user can add this property to animal
+  end
+
   def from_str(card) when is_bitstring(card) do
     card
     |> String.split(" ")
