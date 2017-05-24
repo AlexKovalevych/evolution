@@ -12,8 +12,9 @@ config :logger, level: :warn
 # Configure your database
 config :evolution, Evolution.Repo,
   adapter: Ecto.Adapters.Postgres,
-  username: "postgres",
-  password: "postgres",
+  username: "evolution",
+  password: "evolution",
   database: "evolution_test",
   hostname: "localhost",
-  pool: Ecto.Adapters.SQL.Sandbox
+  pool: Ecto.Adapters.SQL.Sandbox,
+  pool_size: 10

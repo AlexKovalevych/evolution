@@ -101,7 +101,7 @@ defmodule Evolution.Engine.Rules do
   def evolution({:call, from}, {:put_card, user, {from_index, property, to_index}}, game) do
     with {true, player} <- Player.check_turn(game, user),
          {true, _} <- {!is_nil(Enum.at(player.cards, from_index)), "no such card"},
-         {true, _} <- {!is_nil(Enum.find(player.animals, &(&1.card == to_index))), "no such animal"},
+         {true, card, _} <- {!is_nil(find_animal(player, to_index)), find_animal(player, to_index), "no such animal"},
          {true, _} <- {card |> String.split(" ") |> Enum.member?(property), "no such property"},
          {true, _} <- Card.check_property(Enum.find(player.animals, &(&1.card == to_index)), property) do
       # define if user can put the card at that position
@@ -109,6 +109,10 @@ defmodule Evolution.Engine.Rules do
     else
       {false, reason} -> {:keep_state_and_data, {:reply, from, reason}}
     end
+  end
+
+  defp find_animal(player, index) do
+    Enum.find(player.animals, &(&1.card == index))
   end
 
   def evolution({:call, from}, {:put_card, user, _}, game), do: {:keep_state_and_data, {:reply, from, :error}}

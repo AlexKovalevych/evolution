@@ -4,7 +4,7 @@ defmodule Evolution.Repo.Migrations.CreateUserGame do
   def change do
     create table(:user_games) do
       add :cards, {:array, :string}, null: false
-      add :finish_stage, default: false
+      add :finish_stage, :boolean, default: false
       add :game_id, references(:games, on_delete: :nothing)
       add :user_id, references(:users, on_delete: :nothing)
 

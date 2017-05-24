@@ -3,7 +3,7 @@ defmodule Evolution.AuthorizationTest do
 
   alias Evolution.Authorization
 
-  @valid_attrs %{expires_at: 42, provider: "some content", token: "some content"}
+  @valid_attrs %{expires_at: 42, provider: "some content", token: "some content", uid: "1", user_id: 1}
   @invalid_attrs %{}
 
   test "changeset with valid attributes" do

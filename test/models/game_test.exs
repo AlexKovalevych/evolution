@@ -3,7 +3,7 @@ defmodule Evolution.GameTest do
 
   alias Evolution.Game
 
-  @valid_attrs %{completed: true, current_stage: "some content"}
+  @valid_attrs %{completed: true, players_number: 2, creator_id: 1}
   @invalid_attrs %{}
 
   test "changeset with valid attributes" do

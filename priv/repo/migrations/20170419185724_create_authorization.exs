@@ -10,7 +10,7 @@ defmodule Evolution.Repo.Migrations.CreateAuthorization do
       add :refresh_token, :string
       add :expires_at, :bigint
 
-      timestamps
+      timestamps()
     end
 
     create index(:authorizations, [:provider, :uid], unique: true)

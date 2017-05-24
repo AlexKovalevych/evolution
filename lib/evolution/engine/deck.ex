@@ -5,7 +5,7 @@ defmodule Evolution.Engine.Deck do
 
   :fat - жировой запас
 
-  :burrow - норное. Когда существо НАКОРМЛЕНО, оно не может быть атаковано хищником
+  :burrowing - норное. Когда существо НАКОРМЛЕНО, оно не может быть атаковано хищником
 
   :mimicry - мимикрия. Когда это существо атаковано хищником, владелец существа должен
   перенаправить атаку хищника на другое свое существо, которое этот хищник способен атаковать
@@ -13,11 +13,11 @@ defmodule Evolution.Engine.Deck do
   :hibernation - спячка. Использовать в свою фазу питания - существо считается НАКОРМЛЕННЫМ.
   Это свойство нельзя использовать два хода подряд и в последний ход
 
-  :symbiosis - симбиоз. Сыграть одновременно на пару существ. Одно из существ указывается как
+  :symbiosys - симбиоз. Сыграть одновременно на пару существ. Одно из существ указывается как
   СИМБИОНТ. Другое существо не может быть атаковано хищником пока жив СИМБИОНТ, но может
   получать :red/:blue только если СИМБИОНТ уже накормлен
 
-  :carrioner - падальщик. Когда съедено другое существо, существо с этим свойством получает
+  :scavenger - падальщик. Когда съедено другое существо, существо с этим свойством получает
   :blue. :blue может получить только одно существо на столе, начиная с существа игрока,
   которому принадлежит хищник, и далее по часовой стрелке. Это свойство нельзя
   сыграть на существо со свойством ХИЩНИК и наоборот
@@ -26,7 +26,7 @@ defmodule Evolution.Engine.Deck do
   один :red/:blue у другого существа на столе, которое уже получало в этот ход :red/:blue,
   но еще не накормлено. Существо может использовать это свойство только один раз за ход
 
-  :tail_casting - отбрасывание хвоста. Когда существо атаковано хищником, поместить в
+  :tail_loss - отбрасывание хвоста. Когда существо атаковано хищником, поместить в
   сброс карту этого или другого имеющегося у существа свойста. Существо остается в живых.
   Хищник получает только один :blue
 
@@ -37,16 +37,16 @@ defmodule Evolution.Engine.Deck do
 
   :poisonous - ядовитое. Хищник, съевший это существо, в фазу вымирания текущего хода погибает
 
-  :keen_sight - острое зрение. Хищник, имеющий это свойство, может атаковать существо со
+  :sharp_vision - острое зрение. Хищник, имеющий это свойство, может атаковать существо со
   свойством КАМУФЛЯЖ
 
-  :tramper - топотун. Можно использовать в каждую свою фазу питания - уничтожить один :red
+  :grazing - топотун. Можно использовать в каждую свою фазу питания - уничтожить один :red
   из кормовой базы
 
   :cooperation - сотрудничество. Сыграть одновременно на пару существ. Когда одно существо получает
   :red/:blue - второе существо сразу же получает один :blue
 
-  :interaction - взаимодействие. Сыграть одновременнл на пару существ. Когда одно существо получает
+  :communication - взаимодействие. Сыграть одновременнл на пару существ. Когда одно существо получает
   :red из кормовой базы, другое существо получает :red вне очереди
   """
 
@@ -55,26 +55,24 @@ defmodule Evolution.Engine.Deck do
 
   @cards [
     {:big, :fat},
-    {:burrow, :fat},
+    {:burrowing, :fat},
     {:mimicry},
     {:big, :predator},
     {:hibernation, :predator},
-    {:symbiosis},
-    {:carrioner},
+    {:symbiosys},
+    {:scavenger},
     {:piracy},
-    {:tail_casting},
+    {:tail_loss},
     {:camouflage, :fat},
     {:parasite, :fat},
     {:parasite, :predator},
     {:poisonous, :predator},
-    {:keen_sight, :fat},
-    {:tramper, :fat},
+    {:sharp_vision, :fat},
+    {:grazing, :fat},
     {:cooperation, :predator},
     {:cooperation, :fat},
-    {:interaction, :predator}
+    {:communication, :predator}
   ]
-
-  # defstruct pack: [], discard_pile: []
 
   def new do
     @cards
@@ -83,20 +81,4 @@ defmodule Evolution.Engine.Deck do
     |> Enum.to_list
     |> Enum.map(&Card.to_str/1)
   end
-
-  # def take_cards(%__MODULE__{pack: pack} = deck, number) when is_integer(number) do
-  #   {cards, tail} = Enum.split(pack, number)
-  #   {cards, %{deck | pack: tail}}
-  # end
-
-  # def load(%Game{deck: deck, discard_pile: discard_pile}) do
-  #   %__MODULE__{
-  #     pack: Enum.map(deck, &Card.from_string/1),
-  #     discard_pile: Enum.map(discard_pile, &Card.from_string/1),
-  #   }
-  # end
-
-  # def save(%__MODULE__{pack: pack, discard_pile: discard_pile} = deck) do
-  #   %{deck: Enum.map(pack, &Card.to_string/1), discard_pile: Enum.map(discard_pile, &Card.to_string/1)}
-  # end
 end

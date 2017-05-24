@@ -29,7 +29,8 @@ defmodule Evolution.Mixfile do
                     :scrivener_ecto,
                     :comeonin,
                     :ueberauth,
-                    :ueberauth_identity]]
+                    :ueberauth_identity,
+                    :ex_machina]]
   end
 
   # Specifies which paths to compile per environment.
@@ -52,7 +53,8 @@ defmodule Evolution.Mixfile do
      {:scrivener_ecto, "~> 1.2"},
      {:comeonin, "~> 3.0"},
      {:dogma, "~> 0.1.15"},
-     {:cowboy, "~> 1.0"}]
+     {:cowboy, "~> 1.0"},
+     {:ex_machina, "~> 2.0"}]
   end
 
   # Aliases are shortcut or tasks specific to the current project.
@@ -64,7 +66,8 @@ defmodule Evolution.Mixfile do
   defp aliases do
     ["ecto.setup": ["ecto.create", "ecto.migrate", "run priv/repo/seeds.exs"],
      "ecto.reset": ["ecto.drop", "ecto.setup"],
-     "translation": ["gettext.extract", "gettext.merge priv/gettext"]
+     "translation": ["gettext.extract", "gettext.merge priv/gettext"],
+     "test": ["ecto.create --quiet", "ecto.migrate", "test"],
     ]
   end
 end
