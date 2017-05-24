@@ -44,7 +44,8 @@ defmodule Evolution.Game do
     |> where([g], g.id == ^game.id)
     |> join(:left, [g], p in assoc(g, :players))
     |> join(:left, [g, p], u in assoc(p, :user))
-    |> preload([g, p, u], [players: {p, user: u}])
+    |> join(:left, [g, p, u], a in assoc(p, :animals))
+    |> preload([g, p, u, a], [players: {p, animals: a, user: u}])
     |> preload([g, p], [:current_turn])
     |> Repo.one
   end

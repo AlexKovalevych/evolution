@@ -80,7 +80,7 @@ defmodule Evolution.Engine.Rules do
       case transaction do
         {:ok, game} ->
           game = Game.refresh_game(game)
-          {:next_state, :evolution, game, {:reply, from, :ok}}
+          {:next_state, :evolution, game, {:reply, from, game}}
         {:error, value} ->
           Logger.error(value)
           {:keep_state_and_data, {:reply, from, :error}}
@@ -135,7 +135,8 @@ defmodule Evolution.Engine.Rules do
 
   def evolution({:call, from}, {:finish_stage, user}, game) do
     with {true, player} <- Player.check_turn(game, user),
-         {:ok, game} <- finish_user_stage(game, player) do
+         {:ok, game} <- finish_user_stage(game, player),
+         game <- Game.refresh_game(game) do
       {:keep_state, game, {:reply, from, game}}
     else
       {false, reason} -> {:keep_state_and_data, {:reply, from, reason}}
