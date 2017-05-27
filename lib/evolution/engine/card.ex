@@ -19,12 +19,14 @@ defmodule Evolution.Engine.Card do
   # {:cooperation}
   # {:interaction}
 
-  def check_property(animal, "big" = property) do
-    !Enum.member?(animal.properties, property)
-  end
+  # def check_property(animal, "big" = property) do
+  #   !Enum.member?(animal.properties, property)
+  # end
 
 
   def check_property(animal, property) do
+    IO.inspect({animal, property})
+    {true, nil}
     # check if user can add this property to animal
   end
 

@@ -3,7 +3,7 @@ defmodule Evolution.Repo.Migrations.CreateUserGameAnimal do
 
   def change do
     create table(:user_game_animals) do
-      add :card, :string
+      add :card, :integer
       add :properties, {:array, :string}
       add :food, :integer
       add :extra_food, :integer

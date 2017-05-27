@@ -14,6 +14,7 @@ defmodule Evolution.Engine.Rules do
   alias Evolution.UserGame
   alias Evolution.UserGameAnimal
   alias Evolution.Engine.Player
+  alias Evolution.Engine.Card
   import Evolution.Engine.Stage.Evolution, only: [create_animal: 4]
   import Ecto.Query
   require Logger
@@ -37,7 +38,6 @@ defmodule Evolution.Engine.Rules do
       {:keep_state_and_data, {:reply, from, :error}}
     else
       new_order = game.turn_order ++ [user.id]
-      game = %{game | turn_order: new_order}
       %UserGame{}
       |> UserGame.changeset(
         %{
@@ -46,6 +46,9 @@ defmodule Evolution.Engine.Rules do
         }
       )
       |> Repo.insert!
+      game
+      |> Game.changeset(%{turn_order: new_order})
+      |> Repo.update!
       game = Game.refresh_game(game)
       {:keep_state, game, {:reply, from, game}}
     end
@@ -55,7 +58,6 @@ defmodule Evolution.Engine.Rules do
     if Enum.count(game.players) == game.players_number do
       transaction = Repo.transaction(fn ->
         players = Repo.preload(game.players, :user)
-        turn_order = Enum.map(players, fn user_game -> user_game.user.id end)
         deck = Enum.reduce(game.players, Deck.new |> Enum.shuffle, fn user_game, deck ->
           {cards, deck} = UserGame.take_cards(deck, 6)
           user_game
@@ -63,16 +65,14 @@ defmodule Evolution.Engine.Rules do
           |> Repo.update!
           deck
         end)
-        first_player = players |> List.first
         game
         |> Game.changeset(
           %{
             fsm_state: "evolution",
             deck: deck,
             discard_pile: [],
-            turn_order: turn_order,
-            stage_order: turn_order,
-            current_turn_id: first_player.user.id,
+            stage_order: game.turn_order,
+            current_turn_id: List.first(game.turn_order),
           }
         )
         |> Repo.update!
@@ -101,8 +101,7 @@ defmodule Evolution.Engine.Rules do
   def evolution({:call, from}, {:put_card, user, {from_index, property, to_index}}, game) do
     with {true, player} <- Player.check_turn(game, user),
          {true, _} <- {!is_nil(Enum.at(player.cards, from_index)), "no such card"},
-         {true, card, _} <- {!is_nil(find_animal(player, to_index)), find_animal(player, to_index), "no such animal"},
-         {true, _} <- {card |> String.split(" ") |> Enum.member?(property), "no such property"},
+         {true, _} <- {!is_nil(find_card_property(player, to_index, property)), "no such property"},
          {true, _} <- Card.check_property(Enum.find(player.animals, &(&1.card == to_index)), property) do
       # define if user can put the card at that position
       {:keep_state_and_data, {:reply, from, :ok}}
@@ -111,8 +110,13 @@ defmodule Evolution.Engine.Rules do
     end
   end
 
-  defp find_animal(player, index) do
-    Enum.find(player.animals, &(&1.card == index))
+  defp find_card_property(player, index, property) do
+    card = player.cards |> Enum.at(index)
+    if is_nil(card) do
+      false
+    else
+      card |> String.split(" ") |> Enum.member?(property)
+    end
   end
 
   def evolution({:call, from}, {:put_card, user, _}, game), do: {:keep_state_and_data, {:reply, from, :error}}

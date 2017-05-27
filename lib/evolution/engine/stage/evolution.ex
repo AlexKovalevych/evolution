@@ -18,7 +18,7 @@ defmodule Evolution.Engine.Stage.Evolution do
       %UserGameAnimal{}
       |> UserGameAnimal.changeset(
         %{
-          card: user_game.animals |> Enum.count |> to_string,
+          card: user_game.animals |> Enum.count,
           user_game_id: user_game.id,
         }
       )

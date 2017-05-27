@@ -4,7 +4,7 @@ defmodule Evolution.UserGameAnimal do
   # @derive {Poison.Encoder, only: [:id, :completed, :players_number, :inserted_at, :updated_at]}
 
   schema "user_game_animals" do
-    field :card, :string
+    field :card, :integer
     field :properties, {:array, :string}
     field :food, :integer       # red points
     field :extra_food, :integer # blue points
