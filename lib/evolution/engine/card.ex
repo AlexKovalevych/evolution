@@ -19,15 +19,13 @@ defmodule Evolution.Engine.Card do
   # {:cooperation}
   # {:interaction}
 
-  # def check_property(animal, "big" = property) do
-  #   !Enum.member?(animal.properties, property)
-  # end
-
-
   def check_property(animal, property) do
-    IO.inspect({animal, property})
-    {true, nil}
-    # check if user can add this property to animal
+    if Enum.member?(animal.properties, property) do
+      false
+    else
+      # check if user can add this property to animal
+      {true, nil}
+    end
   end
 
   def from_str(card) when is_bitstring(card) do

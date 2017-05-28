@@ -3,6 +3,7 @@ defmodule Evolution.Engine.RulesTest do
   import Evolution.Factory
 
   alias Evolution.Engine
+  alias Evolution.Engine.Card
   alias Evolution.Engine.Rules
   alias Evolution.Engine.Card
 
@@ -102,7 +103,7 @@ defmodule Evolution.Engine.RulesTest do
     Engine.put_card(pid, user1, 0)
     game = Engine.put_card(pid, user2, 0)
     card = game.players
-    |> Enum.at(0)
+    |> Enum.find(&(&1.user.id) == user1.id)
     |> Map.get(:cards)
     |> Enum.at(0)
     |> Card.from_str
