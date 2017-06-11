@@ -85,8 +85,8 @@ defmodule Evolution.Engine.RulesTest do
   end
 
   test "finish evolution stage" do
-    {pid, user1, user2, game} = start_game()
-    game = Engine.put_card(pid, user1, 0)
+    {pid, user1, user2, _} = start_game()
+    Engine.put_card(pid, user1, 0)
     Engine.put_card(pid, user2, 0)
     game = Engine.finish_stage(pid, user1)
     player = Enum.find(game.players, &(&1.user.id == user1.id))
@@ -111,6 +111,9 @@ defmodule Evolution.Engine.RulesTest do
     |> List.first
     |> to_string
     game = Engine.put_card(pid, user1, {0, card, 0})
-    IO.inspect(game)
+    player = Enum.find(game.players, &(&1.user.id == user1.id))
+    animal = Enum.find(player.animals, &(&1.card == 0))
+    assert Enum.member?(animal.properties, card)
+    assert Engine.put_card(pid, user1, {0, card, 0}) == "property already exists"
   end
 end

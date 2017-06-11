@@ -21,7 +21,7 @@ defmodule Evolution.Engine.Card do
 
   def check_property(animal, property) do
     if Enum.member?(animal.properties, property) do
-      false
+      {false, "property already exists"}
     else
       # check if user can add this property to animal
       {true, nil}

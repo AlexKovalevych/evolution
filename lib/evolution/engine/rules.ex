@@ -103,7 +103,7 @@ defmodule Evolution.Engine.Rules do
          {true, _} <- {!is_nil(Enum.at(player.cards, from_index)), "no such card"},
          {true, _} <- {!is_nil(find_card_property(player, to_index, property)), "no such property"},
          {true, _} <- Card.check_property(Enum.find(player.animals, &(&1.card == to_index)), property),
-         {true, _} <- add_property(Enum.find(player.animals, &(&1.card == to_index), property)),
+         {true, _} <- add_property(Enum.find(player.animals, &(&1.card == to_index)), property),
          game <- Game.refresh_game(game) do
       {:keep_state, game, {:reply, from, game}}
     else
@@ -112,9 +112,13 @@ defmodule Evolution.Engine.Rules do
   end
 
   defp add_property(animal, property) do
-    animal
+    animal = animal
     |> UserGameAnimal.changeset(%{properties: animal.properties ++ [property]})
-    |> Repo.update!
+    |> Repo.update
+    case animal do
+      {:ok, animal} -> {true, animal}
+      {:error, reason} -> {false, reason}
+    end
   end
 
   defp find_card_property(player, index, property) do
