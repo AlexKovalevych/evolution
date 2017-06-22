@@ -11,7 +11,10 @@ model =
     , games = []
     , newGamePlayers = 2
     , searchPlayers = 2
+    , searchPlayer = ""
     , foundGames = []
+    , foundPages = 1
+    , foundPage = 1
     , openedGame = Nothing
     }
 
@@ -22,7 +25,10 @@ type alias GameModel =
     , games : List Game
     , newGamePlayers : Int
     , searchPlayers : Int
+    , searchPlayer : String
     , foundGames : List Game
+    , foundPages : Int
+    , foundPage : Int
     , openedGame : Maybe GameState
     }
 

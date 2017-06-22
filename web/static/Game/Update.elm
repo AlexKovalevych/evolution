@@ -24,6 +24,12 @@ update msg model =
             SetPlayers players ->
                 { model | games = { gamesModel | newGamePlayers = players } } ! []
 
+            SetSearchPlayers players ->
+                { model | games = { gamesModel | searchPlayers = players } } ! []
+
+            SetSearchPlayer player ->
+                { model | games = { gamesModel | searchPlayer = player } } ! []
+
             LoadGames value ->
                 case JD.decodeValue decodeGamesResponse value of
                     Err reason ->
@@ -71,7 +77,7 @@ update msg model =
                                 JE.object [ ( "players", JE.int gamesModel.newGamePlayers ) ]
 
                             push =
-                                Phoenix.Push.init "games:new" gamesChannel
+                                Phoenix.Push.init "new" gamesChannel
                                     |> Phoenix.Push.withPayload payload
                                     |> Phoenix.Push.onOk
                                         (\value ->
@@ -104,6 +110,26 @@ update msg model =
 
             SearchGames ->
                 searchGames model
+
+            FoundGames value ->
+                case JD.decodeValue decodeGamesResponse value of
+                    Err reason ->
+                        let
+                            _ =
+                                Debug.log "reason" reason
+                        in
+                            model ! []
+
+                    Ok gamesResponse ->
+                        { model
+                            | games =
+                                { gamesModel
+                                    | foundGames = gamesResponse.games
+                                    , foundPages = gamesResponse.total_pages
+                                    , foundPage = gamesResponse.page
+                                }
+                        }
+                            ! []
 
             ReloadPage ->
                 case model.route of
@@ -151,7 +177,7 @@ loadGames model =
                         (JE.object [ ( "page", JE.int model.games.page ) ])
 
                     channel =
-                        Phoenix.Push.init "games:list" gamesChannel
+                        Phoenix.Push.init "list" gamesChannel
                             |> Phoenix.Push.withPayload payload
                             |> Phoenix.Push.onOk (\v -> Game <| LoadGames v)
 
@@ -184,7 +210,7 @@ loadGame id model =
                             (JE.object [ ( "id", JE.int id ) ])
 
                         channel =
-                            Phoenix.Push.init "games:load" gamesChannel
+                            Phoenix.Push.init "load" gamesChannel
                                 |> Phoenix.Push.withPayload payload
                                 |> Phoenix.Push.onOk (\v -> Game <| LoadGame v)
 
@@ -206,13 +232,19 @@ searchGames model =
         Just socket ->
             if List.member GamesChannel model.channels then
                 let
-                    -- payload =
-                    --     (JE.object [ ( "page", JE.int model.games.page ) ])
-                    channel =
-                        Phoenix.Push.init "games:search" gamesChannel
+                    payload =
+                        (JE.object
+                            [ ( "player", JE.string model.games.searchPlayer )
+                            , ( "players", JE.int model.games.searchPlayers )
+                            , ( "page", JE.int model.games.foundPage )
+                            ]
+                        )
 
-                    -- |> Phoenix.Push.withPayload payload
-                    -- |> Phoenix.Push.onOk (\v -> Game <| LoadGames v)
+                    channel =
+                        Phoenix.Push.init "search" gamesChannel
+                            |> Phoenix.Push.withPayload payload
+                            |> Phoenix.Push.onOk (\v -> Game <| FoundGames v)
+
                     ( phxSocket, phxCmd ) =
                         Phoenix.Socket.push channel socket
                 in
